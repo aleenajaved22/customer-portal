@@ -174,7 +174,7 @@ export function InvoicePaymentPage() {
         showBanner && !isBoardLayout ? (
           <InvoicePaymentBanner
             count={awaitingPaymentCount}
-            viewInvoicesLabel={isViewingPendingOnly ? 'Back to all invoices' : 'View Invoices'}
+            viewInvoicesLabel="View Invoices"
             onViewInvoices={() => {
               if (isViewingPendingOnly) {
                 setStatus('');

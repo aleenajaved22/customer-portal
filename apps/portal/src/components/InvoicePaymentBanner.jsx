@@ -6,6 +6,17 @@ import { useTheme } from '@mui/material/styles';
 import bannerCloseIcon from '../assets/invoice-stats/banner-close.svg';
 import { Button } from './design-system';
 
+/** Compact banner control sizing — shared so both actions read as one pair. */
+const compactButtonSx = {
+  minWidth: 'auto',
+  height: 28,
+  px: '10px',
+  fontSize: 13,
+  fontWeight: 500,
+  lineHeight: '18px',
+  borderRadius: '6px',
+};
+
 export function InvoicePaymentBanner({ count, viewInvoicesLabel = 'View Invoices', onViewInvoices, onPayNow, onDismiss }) {
   const theme = useTheme();
 
@@ -17,9 +28,9 @@ export function InvoicePaymentBanner({ count, viewInvoicesLabel = 'View Invoices
         alignItems: 'center',
         justifyContent: 'space-between',
         gap: 2,
-        px: '16px',
+        px: { xs: 2, md: '32px' },
         py: '8px',
-        backgroundColor: '#fcefdc',
+        backgroundColor: theme.palette.surfaceGreySubtle,
       }}
     >
       <Typography
@@ -36,11 +47,11 @@ export function InvoicePaymentBanner({ count, viewInvoicesLabel = 'View Invoices
         invoices awaiting your payment
       </Typography>
 
-      <Stack direction="row" alignItems="center" spacing={1.5}>
-        <Button variant="tertiaryGrey" onClick={onViewInvoices} sx={{ minWidth: 'auto' }}>
+      <Stack direction="row" alignItems="center" spacing={1}>
+        <Button variant="onlyText" onClick={onViewInvoices} sx={compactButtonSx}>
           {viewInvoicesLabel}
         </Button>
-        <Button variant="secondaryGrey" onClick={onPayNow} sx={{ minWidth: 105 }}>
+        <Button variant="primary" onClick={onPayNow} sx={compactButtonSx}>
           Pay Now
         </Button>
         <IconButton

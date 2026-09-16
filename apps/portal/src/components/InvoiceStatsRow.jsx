@@ -149,30 +149,44 @@ function SegmentLegendItem({ segment }) {
   const theme = useTheme();
 
   return (
-    <Box sx={{ minWidth: 0, width: '100%', textAlign: 'left' }}>
-      <Stack direction="row" alignItems="center" spacing={0.75} justifyContent="flex-start" sx={{ mb: 0.5 }}>
+    <Stack direction="row" spacing={0.75} sx={{ minWidth: 0, width: '100%' }}>
+      <Box
+        sx={{
+          height: '18px',
+          display: 'flex',
+          alignItems: 'center',
+          flexShrink: 0,
+        }}
+      >
         <Box
           sx={{
             width: 8,
             height: 8,
             borderRadius: '50%',
             backgroundColor: segment.dotColor,
-            flexShrink: 0,
           }}
         />
-        <Typography sx={{ fontSize: 13, fontWeight: 400, color: theme.palette.textSecondary3 }}>{segment.label}</Typography>
-      </Stack>
-      <Typography
-        sx={{
-          fontSize: 14,
-          fontWeight: 600,
-          color: theme.palette.textPrimary,
-          pl: 2,
-        }}
-      >
-        {segment.amountLabel} · {segment.percent}%
-      </Typography>
-    </Box>
+      </Box>
+      <Box sx={{ minWidth: 0 }}>
+        <Typography
+          sx={{ fontSize: 13, fontWeight: 400, lineHeight: '18px', color: theme.palette.textSecondary3 }}
+        >
+          {segment.label}
+        </Typography>
+        <Typography
+          sx={{
+            fontSize: 14,
+            fontWeight: 600,
+            lineHeight: '20px',
+            fontVariantNumeric: 'tabular-nums',
+            color: theme.palette.textPrimary,
+            mt: '2px',
+          }}
+        >
+          {segment.amountLabel} · {segment.percent}%
+        </Typography>
+      </Box>
+    </Stack>
   );
 }
 
@@ -186,20 +200,42 @@ export function InvoiceStatsSegmentRow({ totalLabel, segments }) {
       sx={{
         width: '100%',
         px: { xs: 2, md: '32px' },
-        py: '24px',
+        py: '16px',
         backgroundColor: theme.palette.surfaceWhite,
         borderTop: `1px solid ${theme.palette.borderSubtle1}`,
         borderBottom: `1px solid ${theme.palette.borderSubtle1}`,
       }}
     >
-      <Typography sx={{ fontSize: 15, fontWeight: 600, color: theme.palette.textPrimary, mb: 2 }}>
-        Invoice status{' '}
-        <Box component="span" sx={{ fontWeight: 400, color: theme.palette.textSecondary3 }}>
-          {totalLabel} total
+      <Typography
+        sx={{
+          mb: 1.25,
+          fontSize: 22,
+          fontWeight: 700,
+          lineHeight: '28px',
+          letterSpacing: '-0.02em',
+          fontVariantNumeric: 'tabular-nums',
+          color: theme.palette.textPrimary,
+        }}
+      >
+        {totalLabel}
+        <Box
+          component="span"
+          sx={{
+            ml: '6px',
+            fontSize: 13,
+            fontWeight: 400,
+            letterSpacing: 'normal',
+            color: theme.palette.textSecondary3,
+          }}
+        >
+          total
         </Box>
       </Typography>
 
-      <Stack direction="row" spacing={0.75} sx={{ width: '100%', height: 12, mb: 2.5 }}>
+      <Stack
+        direction="row"
+        sx={{ width: '100%', height: 5, mb: 1.25, borderRadius: '999px', overflow: 'hidden' }}
+      >
         {segments.map((segment) => {
           const widthPercent = totalValue === 0 ? 100 / segments.length : (segment.value / safeTotal) * 100;
 
@@ -208,9 +244,8 @@ export function InvoiceStatsSegmentRow({ totalLabel, segments }) {
               key={segment.id}
               sx={{
                 flex: `${widthPercent} 1 0`,
-                minWidth: segment.value > 0 ? 12 : 0,
+                minWidth: segment.value > 0 ? 5 : 0,
                 height: '100%',
-                borderRadius: '6px',
                 backgroundColor: segment.barColor,
                 opacity: segment.value > 0 ? 1 : 0.35,
               }}

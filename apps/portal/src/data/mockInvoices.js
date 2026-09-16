@@ -1,10 +1,10 @@
 import { semantic } from '@signal/design-tokens/colors';
 
-/** Chip subtle backgrounds stepped down 2 shades on DS color ramps (bar fills). */
+/** Saturated status fills from the DS strong-surface ramp (bar fills). */
 const SEGMENT_BAR_FILL = {
-  paid: '#bee3be',
-  pending: '#ffd9a8',
-  overdue: '#f0bab9',
+  paid: semantic.surface.successStrong,
+  pending: semantic.surface.warningStrong,
+  overdue: semantic.surface.alertStrong,
 };
 const DASHBOARD_STAT_THEME = {
   total: {
@@ -284,19 +284,19 @@ export function getInvoiceStatusSegmentStats(invoices = mockInvoices) {
       id: 'paid',
       label: 'Paid',
       barColor: SEGMENT_BAR_FILL.paid,
-      dotColor: semantic.status.onSubtle.success,
+      dotColor: SEGMENT_BAR_FILL.paid,
     },
     {
       id: 'pending',
       label: 'Pending',
       barColor: SEGMENT_BAR_FILL.pending,
-      dotColor: semantic.status.onSubtle.warning,
+      dotColor: SEGMENT_BAR_FILL.pending,
     },
     {
       id: 'overdue',
       label: 'Overdue',
       barColor: SEGMENT_BAR_FILL.overdue,
-      dotColor: semantic.text.alert,
+      dotColor: SEGMENT_BAR_FILL.overdue,
     },
   ].map((segment) => {
     const value = sumInvoicesByStatus(invoices, segment.label);
