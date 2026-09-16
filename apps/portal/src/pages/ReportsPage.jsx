@@ -8,7 +8,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useMemo, useState } from 'react';
 import { PortalShell } from '../components/PortalShell';
 import { ReportsToolbar } from '../components/ReportsToolbar';
-import { EmptyState, ReportsTable } from '../components/design-system';
+import { EmptyState, PageHeader, ReportsTable } from '../components/design-system';
 import { mockReports } from '../data/mockReports';
 
 const ROWS_PER_PAGE = 8;
@@ -75,6 +75,7 @@ export function ReportsPage() {
   return (
     <PortalShell activeNav="reports">
       <Stack spacing={2.5}>
+        <PageHeader title="Reports" description="Site summaries and incident reports across your locations." />
         <ReportsToolbar
           query={query}
           onQueryChange={setQuery}

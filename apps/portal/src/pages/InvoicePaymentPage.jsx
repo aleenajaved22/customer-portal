@@ -13,7 +13,7 @@ import { InvoicePreviewDrawer } from '../components/InvoicePreviewDrawer';
 import { InvoiceStatsLayoutToggle, InvoiceStatsRow, InvoiceStatsSegmentRow } from '../components/InvoiceStatsRow';
 import { InvoiceBoardList } from '../components/InvoiceBoardList';
 import { InvoicesToolbar } from '../components/InvoicesToolbar';
-import { EmptyState, InvoicesTable } from '../components/design-system';
+import { EmptyState, InvoicesTable, PageHeader } from '../components/design-system';
 import { usePaymentMethods } from '../context/PaymentMethodsContext';
 import {
   getInvoiceDashboardCards,
@@ -197,6 +197,14 @@ export function InvoicePaymentPage() {
       }
     >
       <Stack spacing={2.5}>
+        {/* Title sits on the page gutter; the stats strip below stays full-bleed. */}
+        <Box sx={{ pl: '32px', pt: '24px' }}>
+          <PageHeader
+            title="Invoice Payments"
+            description="Outstanding balance and every invoice across your sites."
+          />
+        </Box>
+
         <Box sx={{ mr: '-32px', width: 'calc(100% + 32px)' }}>
           {isBoardLayout ? (
             <InvoiceStatsRow cards={dashboardCards} stackedLayout />
