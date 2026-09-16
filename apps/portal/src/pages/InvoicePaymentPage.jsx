@@ -20,6 +20,7 @@ import {
   getInvoiceStatusSegmentStats,
   getPendingInvoices,
   mockInvoices,
+  parseInvoiceDate,
 } from '../data/mockInvoices';
 
 const ROWS_PER_PAGE = 8;
@@ -121,8 +122,14 @@ export function InvoicePaymentPage() {
     }
 
     rows.sort((a, b) => {
-      const aVal = a[sortField];
-      const bVal = b[sortField];
+      let aVal = a[sortField];
+      let bVal = b[sortField];
+
+      if (sortField === 'dueDate') {
+        aVal = parseInvoiceDate(aVal)?.getTime() ?? 0;
+        bVal = parseInvoiceDate(bVal)?.getTime() ?? 0;
+      }
+
       if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
       if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
       return 0;

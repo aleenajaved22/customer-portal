@@ -11,6 +11,7 @@ import { useTheme } from '@mui/material/styles';
 import { FiltergoWordmark } from './FiltergoWordmark';
 import infoAdjustmentsIcon from '../assets/icons/icon-info-adjustments.svg';
 import { getInvoiceDetailExtras } from '../data/invoiceDetailMock';
+import { formatInvoiceDueDate } from '../data/mockInvoices';
 import { ContractChip } from './design-system/ContractChip';
 
 function DetailRow({ label, value }) {
@@ -187,7 +188,7 @@ export function InvoiceDetailPreview({ invoice }) {
         <Stack spacing={1} sx={{ width: '100%' }}>
           <SectionTitle>Billing Details</SectionTitle>
           <DetailRow label="Invoice Generated" value={detail.invoiceGenerated} />
-          <DetailRow label="Due Date" value={invoice.dueDate} />
+          <DetailRow label="Due Date" value={formatInvoiceDueDate(invoice.dueDate)} />
           <DetailRow label="Invoice Duration" value={detail.invoiceDuration} />
           <DetailRow label="PO Number" value={detail.poNumber} />
           <DetailRow label="Payment Terms" value={detail.paymentTerms} />

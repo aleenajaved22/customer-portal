@@ -15,6 +15,7 @@ import { Checkbox } from './Checkbox';
 import { ContractChip } from './ContractChip';
 import { InvoiceStatusChip } from './InvoiceStatusChip';
 import { InvoiceViewIconButton } from '../InvoiceViewIconButton';
+import { formatInvoiceDueDate } from '../../data/mockInvoices';
 
 export function InvoicesTable({
   invoices,
@@ -412,7 +413,7 @@ export function InvoicesTable({
                       : {}),
                   }}
                 >
-                  {invoice.dueDate}
+                  {formatInvoiceDueDate(invoice.dueDate)}
                 </Typography>
               </TableCell>
               <TableCell

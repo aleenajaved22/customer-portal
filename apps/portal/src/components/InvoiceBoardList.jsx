@@ -8,6 +8,7 @@ import { semantic } from '@signal/design-tokens/colors';
 import { Checkbox } from './design-system/Checkbox';
 import { ContractChip } from './design-system/ContractChip';
 import { InvoiceViewIconButton } from './InvoiceViewIconButton';
+import { formatInvoiceDueDate } from '../data/mockInvoices';
 
 const BOARD_SECTIONS = [
   {
@@ -121,7 +122,7 @@ function InvoiceBoardRow({ invoice, selected, onToggle, onOpen, showDivider = tr
         </Box>
         <LabeledField
           label="Due Date"
-          value={invoice.dueDate}
+          value={formatInvoiceDueDate(invoice.dueDate)}
           valueSx={
             invoice.status === 'Overdue'
               ? { color: theme.palette.error.main, fontWeight: 500 }
@@ -146,7 +147,7 @@ function InvoiceBoardRow({ invoice, selected, onToggle, onOpen, showDivider = tr
         <LabeledField label="Site" value={invoice.site} size="sm" />
         <LabeledField
           label="Due Date"
-          value={invoice.dueDate}
+          value={formatInvoiceDueDate(invoice.dueDate)}
           size="sm"
           valueSx={
             invoice.status === 'Overdue'

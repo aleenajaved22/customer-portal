@@ -55,7 +55,7 @@ export const mockInvoices = [
     amount: '$4,250.00',
     status: 'Pending',
     contract: 'Contract Q1-2024',
-    dueDate: 'Aug 15, 2025',
+    dueDate: '08/15/25',
     invoiceDate: '12/12/2024',
     paymentTerms: 'NET 10',
   },
@@ -66,7 +66,7 @@ export const mockInvoices = [
     amount: '$2,180.00',
     status: 'Paid',
     contract: 'Contract Q2-2024',
-    dueDate: 'Aug 10, 2025',
+    dueDate: '08/10/25',
     invoiceDate: '11/28/2024',
     paymentTerms: 'NET 10',
   },
@@ -77,7 +77,7 @@ export const mockInvoices = [
     amount: '$3,420.00',
     status: 'Overdue',
     contract: 'Contract Q1-2024',
-    dueDate: 'Aug 1, 2025',
+    dueDate: '08/01/25',
     invoiceDate: '12/01/2024',
     paymentTerms: 'NET 10',
   },
@@ -88,7 +88,7 @@ export const mockInvoices = [
     amount: '$1,890.00',
     status: 'Paid',
     contract: 'Contract Q2-2024',
-    dueDate: 'Jul 28, 2025',
+    dueDate: '07/28/25',
     invoiceDate: '11/15/2024',
     paymentTerms: 'NET 10',
   },
@@ -99,7 +99,7 @@ export const mockInvoices = [
     amount: '$5,100.00',
     status: 'Pending',
     contract: 'Contract Q2-2024',
-    dueDate: 'Aug 20, 2025',
+    dueDate: '08/20/25',
     invoiceDate: '12/05/2024',
     paymentTerms: 'NET 10',
   },
@@ -110,7 +110,7 @@ export const mockInvoices = [
     amount: '$2,650.00',
     status: 'Paid',
     contract: 'Contract Q1-2024',
-    dueDate: 'Jul 22, 2025',
+    dueDate: '07/22/25',
     invoiceDate: '11/20/2024',
     paymentTerms: 'NET 10',
   },
@@ -121,7 +121,7 @@ export const mockInvoices = [
     amount: '$980.00',
     status: 'Overdue',
     contract: 'Contract Q1-2024',
-    dueDate: 'Jul 15, 2025',
+    dueDate: '07/15/25',
     invoiceDate: '11/10/2024',
     paymentTerms: 'NET 10',
   },
@@ -132,7 +132,7 @@ export const mockInvoices = [
     amount: '$3,775.00',
     status: 'Pending',
     contract: 'Contract Q1-2024',
-    dueDate: 'Aug 25, 2025',
+    dueDate: '08/25/25',
     invoiceDate: '12/08/2024',
     paymentTerms: 'NET 10',
   },
@@ -200,6 +200,34 @@ export function getAwaitingPaymentCount(invoices = mockInvoices) {
 export function parseInvoiceAmount(amountStr) {
   const value = Number(String(amountStr).replace(/[^0-9.-]/g, ''));
   return Number.isFinite(value) ? value : 0;
+}
+
+/** Parse invoice due/invoice date strings (MM/DD/YY, MM/DD/YYYY, or locale long form). */
+export function parseInvoiceDate(value) {
+  if (value == null || value === '') return null;
+
+  const slashMatch = String(value).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if (slashMatch) {
+    const month = Number(slashMatch[1]);
+    const day = Number(slashMatch[2]);
+    let year = Number(slashMatch[3]);
+    if (year < 100) year += 2000;
+    const date = new Date(year, month - 1, day);
+    return Number.isNaN(date.getTime()) ? null : date;
+  }
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+/** Display due dates as MM/DD/YY in tables and detail views. */
+export function formatInvoiceDueDate(value) {
+  const parsed = parseInvoiceDate(value);
+  if (!parsed) return value ?? '';
+  const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+  const dd = String(parsed.getDate()).padStart(2, '0');
+  const yy = String(parsed.getFullYear()).slice(-2);
+  return `${mm}/${dd}/${yy}`;
 }
 
 export function formatInvoiceTotal(value) {
