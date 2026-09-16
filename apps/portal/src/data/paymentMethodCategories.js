@@ -183,6 +183,7 @@ export function getPaymentMethodRowDisplay(method) {
         secondary: referenceLine,
       };
     }
+  }
 }
 
 function digitsFromId(id = '') {

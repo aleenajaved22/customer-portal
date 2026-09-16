@@ -148,7 +148,6 @@ export function PaymentMethodModal({
                   onClick={handlePayNow}
                   endIcon={<LockOutlinedIcon sx={{ fontSize: 18 }} />}
                   sx={{
-                    mt: 3,
                     minHeight: 44,
                     py: 1.375,
                     fontSize: 15,

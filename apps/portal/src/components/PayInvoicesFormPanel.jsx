@@ -28,19 +28,19 @@ export function PayInvoicesFormPanel({ methods, selectedId, onSelect, formValues
         <PaymentMethodFormFields methodId={selectedId} values={formValues} onChange={onFieldChange} />
       </Box>
 
-      {formFooter}
-
-      <Typography
-        sx={{
-          fontSize: 10,
-          lineHeight: '14px',
-          color: theme.palette.textSecondary3,
-          textAlign: 'center',
-          mt: 1.5,
-        }}
-      >
-        Your payment is safe and secure
-      </Typography>
+      <Box sx={{ mt: 3, width: '100%', display: 'flex', flexDirection: 'column', gap: 1.25 }}>
+        {formFooter}
+        <Typography
+          sx={{
+            fontSize: 10,
+            lineHeight: '14px',
+            color: theme.palette.textSecondary3,
+            textAlign: 'center',
+          }}
+        >
+          Your payment is safe and secure
+        </Typography>
+      </Box>
     </>
   );
 }
