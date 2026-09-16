@@ -13,7 +13,16 @@ import { PaymentMethodFormFields } from './PaymentMethodFormFields';
 import { PaymentMethodTypePicker } from './PaymentMethodTypePicker';
 import { EMPTY_PAYMENT_METHOD_FORMS, buildDetailsFromForm } from '../data/paymentMethodCategories';
 
-export function AddPaymentMethodModal({ open, onClose, onSave, title = 'Add payment method', initialTypeId }) {
+export function AddPaymentMethodModal({
+  open,
+  onClose,
+  onSave,
+  title = 'Add payment method',
+  initialTypeId,
+  initialValues,
+  lockType = false,
+  saveLabel,
+}) {
   const theme = useTheme();
   const [selectedId, setSelectedId] = useState(PAYMENT_METHOD_TYPES[0].id);
   const [formValues, setFormValues] = useState(EMPTY_PAYMENT_METHOD_FORMS[PAYMENT_METHOD_TYPES[0].id]);
@@ -22,8 +31,8 @@ export function AddPaymentMethodModal({ open, onClose, onSave, title = 'Add paym
     if (!open) return;
     const typeId = initialTypeId ?? PAYMENT_METHOD_TYPES[0].id;
     setSelectedId(typeId);
-    setFormValues({ ...EMPTY_PAYMENT_METHOD_FORMS[typeId] });
-  }, [open, initialTypeId]);
+    setFormValues({ ...EMPTY_PAYMENT_METHOD_FORMS[typeId], ...(initialValues ?? {}) });
+  }, [open, initialTypeId, initialValues]);
 
   const handleTypeChange = (typeId) => {
     setSelectedId(typeId);
@@ -69,14 +78,16 @@ export function AddPaymentMethodModal({ open, onClose, onSave, title = 'Add paym
         <Typography sx={{ fontSize: 13, fontWeight: 500, color: theme.palette.textSecondary3, mb: 1 }}>
           Payment method
         </Typography>
-        <PaymentMethodTypePicker methods={PAYMENT_METHOD_TYPES} selectedId={selectedId} onSelect={handleTypeChange} />
+        {lockType ? null : (
+          <PaymentMethodTypePicker methods={PAYMENT_METHOD_TYPES} selectedId={selectedId} onSelect={handleTypeChange} />
+        )}
 
         <Divider sx={{ mb: 2.5, borderColor: theme.palette.borderSubtle1 }} />
 
         <PaymentMethodFormFields methodId={selectedId} values={formValues} onChange={handleFieldChange} />
 
         <Button variant="primary" fullWidth onClick={handleSave} sx={{ mt: 3, py: 1.25, fontWeight: 600, borderRadius: '8px' }}>
-          Save payment method
+          {saveLabel ?? 'Save payment method'}
         </Button>
       </Box>
     </Dialog>

@@ -91,8 +91,10 @@ export function SavedPaymentMethodPicker({ methods, selectedId, onSelect }) {
                     >
                       {display.primary}
                     </Typography>
-                    {display.secondary ? (
-                      <Typography sx={{ fontSize: 13, color: theme.palette.textSecondary3 }}>{display.secondary}</Typography>
+                    {display.reference ? (
+                      <Typography sx={{ fontSize: 13, color: theme.palette.textSecondary3 }}>
+                        {[display.reference, ...display.fields.map((f) => f.value)].filter(Boolean).join(' · ')}
+                      </Typography>
                     ) : null}
                   </Box>
                 </Box>

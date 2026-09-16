@@ -33,6 +33,30 @@ export const EMPTY_PAYMENT_METHOD_FORMS = {
   },
 };
 
+/** Card brands we can identify from the number the user typed. */
+export const CARD_BRANDS = {
+  visa: { label: 'Visa' },
+  mastercard: { label: 'Mastercard' },
+  amex: { label: 'Amex' },
+  discover: { label: 'Discover' },
+  card: { label: 'Card' },
+};
+
+/** Identify the brand from the leading digits (IIN ranges). Falls back to a generic card. */
+export function detectCardBrand(cardNumber = '') {
+  const digits = String(cardNumber).replace(/\D/g, '');
+  if (!digits) return 'card';
+  if (/^4/.test(digits)) return 'visa';
+  if (/^3[47]/.test(digits)) return 'amex';
+  if (/^(5[1-5]|2(2[2-9]|[3-6]\d|7[01]|720))/.test(digits)) return 'mastercard';
+  if (/^(6011|65|64[4-9])/.test(digits)) return 'discover';
+  return 'card';
+}
+
+export function getCardBrand(brandId) {
+  return CARD_BRANDS[brandId] ?? CARD_BRANDS.card;
+}
+
 export function getPaymentMethodType(typeId, types = []) {
   return types.find((method) => method.id === typeId);
 }
@@ -52,6 +76,7 @@ export function buildDetailsFromForm(typeId, form = {}) {
       const digits = String(form.cardNumber ?? '').replace(/\D/g, '');
       return {
         last4: digits.slice(-4),
+        brand: detectCardBrand(digits),
         nameOnCard: String(form.nameOnCard ?? '').trim(),
         expiryMonth: String(form.expiryMonth ?? '').trim(),
         expiryYear: String(form.expiryYear ?? '').trim(),
@@ -121,80 +146,79 @@ export function buildPaymentMethodSummary(typeId, details = {}) {
   }
 }
 
+/**
+ * Row content for a saved method.
+ *
+ * `fields` mirrors that type's own "Add payment method" form one-for-one, so a row
+ * shows back exactly what was asked for — minus the secrets we deliberately never
+ * store (card CVV, PayPal password). Every value comes from user input; nothing is
+ * synthesised from the record id.
+ *
+ *   primary   — the identity the user would recognise the method by
+ *   reference — the supporting identifier under it
+ *   fields    — the remaining form fields, labelled as the form labelled them
+ */
 export function getPaymentMethodRowDisplay(method) {
   const details = method.details ?? {};
-  const reference = details.reference ?? digitsFromId(method.id).padStart(12, '0').slice(-12);
-  const legacyAccountCode =
-    details.accountCode ?? (digitsFromId(method.id).slice(-5).padStart(5, '0') || '45700');
 
   switch (method.typeId) {
     case 'credit-card': {
-      const expiryRef = formatCardExpiryRowLabel(details);
-      const referenceLine = expiryRef || method.subtitle || 'Visa credit card';
+      const expiry = formatCardExpiry(details);
       return {
         primary: details.nameOnCard?.trim() || method.label || 'Credit card',
-        reference: referenceLine,
-        accountCode: details.last4 ? `Card no **** ${details.last4}` : 'Card no ****',
-        secondary: referenceLine,
+        reference: getCardBrand(details.brand).label,
+        fields: [
+          { label: 'Card number', value: details.last4 ? `•••• ${details.last4}` : '—', minWidth: 104 },
+          { label: 'Expiry', value: expiry || '—', minWidth: 64 },
+        ],
       };
     }
     case 'ach': {
-      const referenceLine = details.routingNumber ? `Routing ${details.routingNumber}` : 'Checking account';
       return {
         primary: details.accountHolderName?.trim() || method.label || 'Bank account',
-        reference: referenceLine,
-        accountCode: details.accountLast4 ? `Acct no **** ${details.accountLast4}` : 'Acct no ****',
-        secondary: referenceLine,
+        reference: 'Bank account',
+        fields: [
+          {
+            label: 'Account number',
+            value: details.accountLast4 ? `•••• ${details.accountLast4}` : '—',
+            minWidth: 116,
+          },
+          { label: 'Routing number', value: details.routingNumber || '—', minWidth: 112 },
+        ],
       };
     }
     case 'paypal': {
-      const referenceLine = `Ref. ${reference}`;
       return {
         primary: details.email || method.label || 'PayPal',
-        reference: referenceLine,
-        accountCode: legacyAccountCode,
-        secondary: referenceLine,
+        reference: 'PayPal',
+        fields: [],
       };
     }
     case 'zelle': {
-      const referenceLine = `Ref. ${reference}`;
+      const nickname = details.nickname?.trim();
+      const contact = details.contact?.trim();
       return {
-        primary: details.contact || method.label || 'Zelle',
-        reference: referenceLine,
-        accountCode: legacyAccountCode,
-        secondary: referenceLine,
+        primary: nickname || contact || method.label || 'Zelle',
+        reference: 'Zelle',
+        fields: contact ? [{ label: 'Email or phone', value: contact, minWidth: 180 }] : [],
       };
     }
     case 'venmo': {
-      const referenceLine = `Ref. ${reference}`;
+      const username = details.username?.trim();
+      const phone = details.phone?.trim();
       return {
-        primary: details.username || method.label || 'Venmo',
-        reference: referenceLine,
-        accountCode: legacyAccountCode,
-        secondary: referenceLine,
+        primary: username ? (username.startsWith('@') ? username : `@${username}`) : method.label || 'Venmo',
+        reference: 'Venmo',
+        fields: phone ? [{ label: 'Mobile number', value: phone, minWidth: 140 }] : [],
       };
     }
     default: {
-      const referenceLine = `Ref. ${reference}`;
       return {
         primary: method.label ?? 'Payment method',
-        reference: referenceLine,
-        accountCode: legacyAccountCode,
-        secondary: referenceLine,
+        reference: method.subtitle ?? '',
+        fields: [],
       };
     }
   }
 }
 
-function digitsFromId(id = '') {
-  return String(id).replace(/\D/g, '');
-}
-
-function formatCardExpiryRowLabel(details = {}) {
-  const month = details.expiryMonth ?? '';
-  const year = details.expiryYear ?? '';
-  if (!month && !year) return '';
-  const mm = String(month).padStart(2, '0');
-  const yy = String(year).length === 4 ? String(year).slice(-2) : String(year).padStart(2, '0');
-  return `Card expiry ${mm}/${yy}`;
-}

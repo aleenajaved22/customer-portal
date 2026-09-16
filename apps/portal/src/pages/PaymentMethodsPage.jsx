@@ -8,48 +8,75 @@ import { useState } from 'react';
 import { PortalShell } from '../components/PortalShell';
 import { AddPaymentMethodModal } from '../components/AddPaymentMethodModal';
 import { PaymentMethodListRow } from '../components/PaymentMethodListRow';
-import { Button } from '../components/design-system';
+import { Button, PageHeader } from '../components/design-system';
 import { usePaymentMethods } from '../context/PaymentMethodsContext';
 import { PAYMENT_METHOD_CATEGORIES, getPaymentMethodType } from '../data/paymentMethodCategories';
 import { PAYMENT_METHOD_TYPES } from '../components/payment-method-logos';
 
+/**
+ * Prefill the edit form from stored details. Secrets we deliberately never keep
+ * (full card number, CVV, PayPal password) come back blank and must be re-entered.
+ */
+function getEditFormValues(method) {
+  const d = method.details ?? {};
+  switch (method.typeId) {
+    case 'credit-card':
+      return {
+        nameOnCard: d.nameOnCard ?? '',
+        expiryMonth: d.expiryMonth ?? '',
+        // The field takes two digits; stored years may be four.
+        expiryYear: String(d.expiryYear ?? '').slice(-2),
+      };
+    case 'ach':
+      return { routingNumber: d.routingNumber ?? '', accountHolderName: d.accountHolderName ?? '' };
+    case 'paypal':
+      return { email: d.email ?? '' };
+    case 'zelle':
+      return { contact: d.contact ?? '', nickname: d.nickname ?? '' };
+    case 'venmo':
+      return { username: d.username ?? '', phone: d.phone ?? '' };
+    default:
+      return {};
+  }
+}
+
 export function PaymentMethodsPage() {
   const theme = useTheme();
-  const { methods, defaultMethodId, addPaymentMethod, setDefaultPaymentMethod, removePaymentMethod } =
+  const { methods, defaultMethodId, addPaymentMethod, removePaymentMethod, updatePaymentMethod } =
     usePaymentMethods();
   const [addOpen, setAddOpen] = useState(false);
   const [addCategory, setAddCategory] = useState(null);
+  const [editingMethod, setEditingMethod] = useState(null);
 
   const openAddPaymentMethod = () => {
     setAddCategory(null);
+    setEditingMethod(null);
+    setAddOpen(true);
+  };
+
+  /** Re-open the form for an existing method, prefilled with what we still hold. */
+  const openEditPaymentMethod = (method) => {
+    setEditingMethod(method);
+    setAddCategory(method.typeId);
     setAddOpen(true);
   };
 
   return (
     <PortalShell activeNav="invoice-payment">
-      <Stack spacing={3} sx={{ width: '100%', maxWidth: 1200, mx: 'auto', px: { xs: 0, md: 1 } }}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          spacing={2}
-          sx={{ width: '100%' }}
-        >
-          <Box sx={{ minWidth: 0 }}>
-            <Typography sx={{ fontSize: 22, fontWeight: 600 }}>Card Management</Typography>
-            <Typography sx={{ fontSize: 14, color: theme.palette.textSecondary2 }}>
-              One active payment method at a time. Select a row to make it active for invoice payments.
-            </Typography>
-          </Box>
-          <Button
-            variant="primary"
-            onClick={openAddPaymentMethod}
-            startIcon={<AddIcon sx={{ fontSize: 18 }} />}
-            sx={{ flexShrink: 0, alignSelf: { xs: 'flex-start', sm: 'center' } }}
-          >
-            Add Payment method
-          </Button>
-        </Stack>
+      <Stack spacing={2.5} sx={{ width: '100%' }}>
+        <PageHeader
+          title="Card Management"
+          description="Saved payment methods for this account. Choose which one to use when you pay an invoice."
+          actions={
+            <Button
+              variant="primary"
+              onClick={openAddPaymentMethod}
+              startIcon={<AddIcon sx={{ fontSize: 18 }} />}
+            >
+              Add Payment method
+            </Button>
+          }
+        />
 
         <Box>
           {PAYMENT_METHOD_CATEGORIES.map((category, categoryIndex) => {
@@ -61,7 +88,18 @@ export function PaymentMethodsPage() {
                   <Divider sx={{ borderColor: theme.palette.borderSubtle1 }} />
                 ) : null}
                 <Box sx={{ py: 2 }}>
-                  <Typography sx={{ fontSize: 16, fontWeight: 600, color: theme.palette.textPrimary, mb: 1.5 }}>
+                  {/* Group eyebrow — deliberately distinct from the 16/600 row name below it. */}
+                  <Typography
+                    sx={{
+                      fontSize: 12,
+                      fontWeight: 600,
+                      lineHeight: '18px',
+                      letterSpacing: '0.06em',
+                      textTransform: 'uppercase',
+                      color: theme.palette.textSecondary3,
+                      mb: 1,
+                    }}
+                  >
                     {category.title}
                   </Typography>
 
@@ -70,27 +108,17 @@ export function PaymentMethodsPage() {
                       No {category.title.toLowerCase()} saved yet.
                     </Typography>
                   ) : (
-                    <Box
-                      sx={{
-                        border: `1px solid ${theme.palette.borderSubtle1}`,
-                        borderRadius: '12px',
-                        backgroundColor: theme.palette.surfaceWhite,
-                        overflow: 'hidden',
-                      }}
-                    >
-                      <Stack spacing={0}>
-                        {categoryMethods.map((method, index) => (
-                          <PaymentMethodListRow
-                            key={method.id}
-                            method={method}
-                            isActive={method.id === defaultMethodId}
-                            onActivate={setDefaultPaymentMethod}
-                            onRemove={removePaymentMethod}
-                            isFirst={index === 0}
-                          />
-                        ))}
-                      </Stack>
-                    </Box>
+                    <Stack spacing={0}>
+                      {categoryMethods.map((method, index) => (
+                        <PaymentMethodListRow
+                          key={method.id}
+                          method={method}
+                          onEdit={openEditPaymentMethod}
+                          onRemove={removePaymentMethod}
+                          isFirst={index === 0}
+                        />
+                      ))}
+                    </Stack>
                   )}
                 </Box>
               </Box>
@@ -104,12 +132,22 @@ export function PaymentMethodsPage() {
         onClose={() => {
           setAddOpen(false);
           setAddCategory(null);
+          setEditingMethod(null);
         }}
-        onSave={(typeId, details) =>
-          addPaymentMethod(typeId, details, { makeDefault: methods.length === 0 || !defaultMethodId })
-        }
+        onSave={(typeId, details) => {
+          if (editingMethod) {
+            updatePaymentMethod(editingMethod.id, typeId, details);
+            return;
+          }
+          addPaymentMethod(typeId, details, { makeDefault: methods.length === 0 || !defaultMethodId });
+        }}
+        initialValues={editingMethod ? getEditFormValues(editingMethod) : undefined}
+        lockType={Boolean(editingMethod)}
+        saveLabel={editingMethod ? 'Save changes' : undefined}
         title={
-          addCategory
+          editingMethod
+            ? `Edit ${getPaymentMethodType(editingMethod.typeId, PAYMENT_METHOD_TYPES)?.label ?? 'payment method'}`
+            : addCategory
             ? `Add ${getPaymentMethodType(addCategory, PAYMENT_METHOD_TYPES)?.label ?? 'payment method'}`
             : 'Add payment method'
         }

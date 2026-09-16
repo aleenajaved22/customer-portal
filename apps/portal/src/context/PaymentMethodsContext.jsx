@@ -1,6 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { buildPaymentMethodSummary } from '../data/paymentMethodCategories';
-import { COMPANION_PAYMENT_METHOD_SEEDS } from '../data/companionPaymentMethods';
 import { getStoredPaymentMethods, setStoredPaymentMethods } from '../auth/paymentMethodsStorage';
 
 const PaymentMethodsContext = createContext(null);
@@ -53,15 +52,8 @@ export function PaymentMethodsProvider({ children }) {
         return state.methods.find((method) => method.id === existingMethodId) ?? null;
       }
 
-      const isFirstSavedMethod = state.methods.length === 0;
       const primary = buildStoredMethod(typeId, details);
       const methods = [...state.methods, primary];
-
-      if (isFirstSavedMethod) {
-        COMPANION_PAYMENT_METHOD_SEEDS.forEach((seed) => {
-          methods.push(buildStoredMethod(seed.typeId, seed.details));
-        });
-      }
 
       persist({ methods, defaultMethodId: primary.id });
       return primary;
@@ -73,6 +65,18 @@ export function PaymentMethodsProvider({ children }) {
     (methodId) => {
       if (!state.methods.some((method) => method.id === methodId)) return;
       persist({ ...state, defaultMethodId: methodId });
+    },
+    [persist, state],
+  );
+
+  const updatePaymentMethod = useCallback(
+    (methodId, typeId, details) => {
+      const existing = state.methods.find((entry) => entry.id === methodId);
+      if (!existing) return null;
+      const summary = buildPaymentMethodSummary(typeId, details);
+      const updated = { ...existing, typeId, details, label: summary.label, subtitle: summary.subtitle };
+      persist({ ...state, methods: state.methods.map((m) => (m.id === methodId ? updated : m)) });
+      return updated;
     },
     [persist, state],
   );
@@ -101,6 +105,7 @@ export function PaymentMethodsProvider({ children }) {
       payAtCheckout,
       setDefaultPaymentMethod,
       removePaymentMethod,
+      updatePaymentMethod,
       syncFromStorage,
     }),
     [
@@ -108,6 +113,7 @@ export function PaymentMethodsProvider({ children }) {
       defaultMethod,
       payAtCheckout,
       removePaymentMethod,
+      updatePaymentMethod,
       setDefaultPaymentMethod,
       syncFromStorage,
       state.defaultMethodId,
