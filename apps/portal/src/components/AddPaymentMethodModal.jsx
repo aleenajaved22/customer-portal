@@ -5,7 +5,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FiltergoWordmark } from './FiltergoWordmark';
 import { PAYMENT_METHOD_TYPES } from './payment-method-logos';
 import { Button, Dialog } from './design-system';
@@ -20,19 +20,27 @@ export function AddPaymentMethodModal({
   title = 'Add payment method',
   initialTypeId,
   initialValues,
+  /** Stable id for what is being edited ('new' when adding) — drives the form reset. */
+  entityKey = 'new',
   lockType = false,
   saveLabel,
 }) {
   const theme = useTheme();
   const [selectedId, setSelectedId] = useState(PAYMENT_METHOD_TYPES[0].id);
   const [formValues, setFormValues] = useState(EMPTY_PAYMENT_METHOD_FORMS[PAYMENT_METHOD_TYPES[0].id]);
+  const initialValuesRef = useRef(initialValues);
+  initialValuesRef.current = initialValues;
 
+  // Reset only when the dialog opens or the entity changes. `initialValues` is a
+  // fresh object every parent render, so depending on it re-ran this effect
+  // continuously and discarded whatever the user had typed.
   useEffect(() => {
     if (!open) return;
     const typeId = initialTypeId ?? PAYMENT_METHOD_TYPES[0].id;
     setSelectedId(typeId);
-    setFormValues({ ...EMPTY_PAYMENT_METHOD_FORMS[typeId], ...(initialValues ?? {}) });
-  }, [open, initialTypeId, initialValues]);
+    setFormValues({ ...EMPTY_PAYMENT_METHOD_FORMS[typeId], ...(initialValuesRef.current ?? {}) });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, initialTypeId, entityKey]);
 
   const handleTypeChange = (typeId) => {
     setSelectedId(typeId);

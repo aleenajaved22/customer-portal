@@ -11,7 +11,6 @@ import { PaymentMethodListRow } from '../components/PaymentMethodListRow';
 import { Button, PageHeader } from '../components/design-system';
 import { usePaymentMethods } from '../context/PaymentMethodsContext';
 import { PAYMENT_METHOD_CATEGORIES, getPaymentMethodType } from '../data/paymentMethodCategories';
-import { getSampleMethods } from '../data/samplePaymentMethods';
 import { PAYMENT_METHOD_TYPES } from '../components/payment-method-logos';
 
 /**
@@ -81,9 +80,7 @@ export function PaymentMethodsPage() {
 
         <Box>
           {PAYMENT_METHOD_CATEGORIES.map((category, categoryIndex) => {
-            const categoryMethods = methods.filter((method) => method.typeId === category.typeId);
-            // Never show an empty category — fall back to display-only sample rows.
-            const rows = categoryMethods.length > 0 ? categoryMethods : getSampleMethods(category.typeId);
+            const rows = methods.filter((method) => method.typeId === category.typeId);
 
             return (
               <Box key={category.typeId}>
@@ -113,7 +110,6 @@ export function PaymentMethodsPage() {
                         method={method}
                         onEdit={openEditPaymentMethod}
                         onRemove={removePaymentMethod}
-                        showActions={!method.isSample}
                         isFirst={index === 0}
                       />
                     ))}
@@ -140,6 +136,7 @@ export function PaymentMethodsPage() {
           addPaymentMethod(typeId, details, { makeDefault: methods.length === 0 || !defaultMethodId });
         }}
         initialValues={editingMethod ? getEditFormValues(editingMethod) : undefined}
+        entityKey={editingMethod?.id ?? 'new'}
         lockType={Boolean(editingMethod)}
         saveLabel={editingMethod ? 'Save changes' : undefined}
         title={
