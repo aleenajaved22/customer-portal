@@ -80,7 +80,7 @@ export function PaymentMethodListRow({ method, onEdit, onRemove, showActions = t
         display: 'flex',
         alignItems: 'center',
         gap: { xs: 1.5, md: 2 },
-        py: 1.5,
+        py: 1,
         // Listing style: a hairline between items, no surrounding container.
         borderTop: isFirst ? 'none' : `1px solid ${theme.palette.borderSubtle1}`,
       }}
@@ -90,13 +90,12 @@ export function PaymentMethodListRow({ method, onEdit, onRemove, showActions = t
       <Box sx={{ flex: '0 1 240px', minWidth: 0 }}>
         <Typography
           sx={{
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: 600,
             color: theme.palette.textPrimary,
             overflow: 'hidden',
             textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
-            mb: 0.25,
           }}
         >
           {display.primary}
@@ -114,7 +113,7 @@ export function PaymentMethodListRow({ method, onEdit, onRemove, showActions = t
       >
         {display.fields.map((field) => (
           <Box key={field.label} sx={{ minWidth: field.minWidth ?? 92 }}>
-            <Typography sx={{ fontSize: 12, color: theme.palette.textSecondary3, mb: 0.25 }}>
+            <Typography sx={{ fontSize: 12, lineHeight: '16px', color: theme.palette.textSecondary3 }}>
               {field.label}
             </Typography>
             <Typography

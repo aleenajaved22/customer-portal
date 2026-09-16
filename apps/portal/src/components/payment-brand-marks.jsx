@@ -25,7 +25,7 @@ export function getPaymentBrandMark(brandId) {
  * Fixed slot so every mark occupies the same footprint regardless of its own
  * aspect ratio — wide wordmarks fill the width, square marks fill the height.
  */
-export const BRAND_SLOT = { width: 44, height: 24 };
+export const BRAND_SLOT = { width: 44, height: 20 };
 
 export function PaymentBrandMark({ brandId, label }) {
   const mark = getPaymentBrandMark(brandId);
