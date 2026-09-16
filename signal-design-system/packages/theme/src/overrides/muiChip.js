@@ -1,4 +1,4 @@
-import { semantic } from '@signal/design-tokens/colors';
+import { primitive, semantic } from '@signal/design-tokens/colors';
 
 const MuiChip = ({ _palette }) => ({
   styleOverrides: {
@@ -29,9 +29,11 @@ const MuiChip = ({ _palette }) => ({
         background: semantic.surface.successSubtle,
         color: semantic.status.onSubtle.success,
       },
+      // Accessibility: warningSubtle + onSubtle.warning was 3.07:1 (below WCAG AA 4.5:1).
+      // Lighter yellow ground + darker orange text = 4.70:1.
       '&.MuiChip-colorWarning': {
-        background: semantic.surface.warningSubtle,
-        color: semantic.status.onSubtle.warning,
+        background: primitive.orange[50],
+        color: primitive.orange[700],
       },
       '&.MuiChip-colorError': {
         backgroundColor: semantic.surface.alertSubtle,
