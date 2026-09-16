@@ -11,6 +11,7 @@ import { PaymentMethodListRow } from '../components/PaymentMethodListRow';
 import { Button, PageHeader } from '../components/design-system';
 import { usePaymentMethods } from '../context/PaymentMethodsContext';
 import { PAYMENT_METHOD_CATEGORIES, getPaymentMethodType } from '../data/paymentMethodCategories';
+import { getSampleMethods } from '../data/samplePaymentMethods';
 import { PAYMENT_METHOD_TYPES } from '../components/payment-method-logos';
 
 /**
@@ -81,6 +82,8 @@ export function PaymentMethodsPage() {
         <Box>
           {PAYMENT_METHOD_CATEGORIES.map((category, categoryIndex) => {
             const categoryMethods = methods.filter((method) => method.typeId === category.typeId);
+            // Never show an empty category — fall back to display-only sample rows.
+            const rows = categoryMethods.length > 0 ? categoryMethods : getSampleMethods(category.typeId);
 
             return (
               <Box key={category.typeId}>
@@ -103,23 +106,18 @@ export function PaymentMethodsPage() {
                     {category.title}
                   </Typography>
 
-                  {categoryMethods.length === 0 ? (
-                    <Typography sx={{ fontSize: 13, color: theme.palette.textSecondary3, py: 1.5 }}>
-                      No {category.title.toLowerCase()} saved yet.
-                    </Typography>
-                  ) : (
-                    <Stack spacing={0}>
-                      {categoryMethods.map((method, index) => (
-                        <PaymentMethodListRow
-                          key={method.id}
-                          method={method}
-                          onEdit={openEditPaymentMethod}
-                          onRemove={removePaymentMethod}
-                          isFirst={index === 0}
-                        />
-                      ))}
-                    </Stack>
-                  )}
+                  <Stack spacing={0}>
+                    {rows.map((method, index) => (
+                      <PaymentMethodListRow
+                        key={method.id}
+                        method={method}
+                        onEdit={openEditPaymentMethod}
+                        onRemove={removePaymentMethod}
+                        showActions={!method.isSample}
+                        isFirst={index === 0}
+                      />
+                    ))}
+                  </Stack>
                 </Box>
               </Box>
             );
