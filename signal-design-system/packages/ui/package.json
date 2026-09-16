@@ -1,0 +1,40 @@
+{
+  "name": "@signal/ui",
+  "version": "0.1.0",
+  "description": "Signal Design System UI primitives (MUI-based thin wrappers)",
+  "license": "UNLICENSED",
+  "private": false,
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "dependencies": {
+    "@signal/design-tokens": "0.1.0"
+  },
+  "peerDependencies": {
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.14.0",
+    "prop-types": "^15.8.0",
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "prop-types": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "signal",
+    "design-system",
+    "mui",
+    "react"
+  ]
+}

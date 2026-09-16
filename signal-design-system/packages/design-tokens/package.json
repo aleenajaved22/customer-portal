@@ -1,0 +1,31 @@
+{
+  "name": "@signal/design-tokens",
+  "version": "0.1.0",
+  "description": "Signal Design System tokens (colors, typography, spacing, radius, shadows, borders, breakpoints)",
+  "license": "UNLICENSED",
+  "private": false,
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./colors": "./src/colors.js",
+    "./typography": "./src/typography.js",
+    "./spacing": "./src/spacing.js",
+    "./radius": "./src/radius.js",
+    "./shadows": "./src/shadows.js",
+    "./borders": "./src/borders.js",
+    "./breakpoints": "./src/breakpoints.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "sideEffects": false,
+  "peerDependencies": {},
+  "keywords": [
+    "signal",
+    "design-tokens",
+    "design-system"
+  ]
+}

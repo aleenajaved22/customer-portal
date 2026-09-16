@@ -1,0 +1,7 @@
+{
+  "name": "signal-design-system",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": ["packages/*"],
+  "description": "Signal Design System — tokens + theme + optional UI. See GETTING_STARTED.md"
+}

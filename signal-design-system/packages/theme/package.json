@@ -1,0 +1,32 @@
+{
+  "name": "@signal/theme",
+  "version": "0.1.0",
+  "description": "Signal MUI theme — apply Signal look and feel to any MUI app",
+  "license": "UNLICENSED",
+  "main": "./src/index.js",
+  "module": "./src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ],
+  "dependencies": {
+    "@signal/design-tokens": "0.1.0"
+  },
+  "peerDependencies": {
+    "@emotion/react": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
+    "@mui/material": "^5.14.0",
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0"
+  },
+  "keywords": [
+    "signal",
+    "mui",
+    "theme",
+    "design-system"
+  ]
+}

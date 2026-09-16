@@ -1,0 +1,33 @@
+import { getDefaultPaymentMethodsState } from '../data/defaultPaymentMethods';
+
+const STORAGE_KEY = 'filtergo_portal_payment_methods_v1';
+
+export function getStoredPaymentMethods() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) {
+      return getDefaultPaymentMethodsState();
+    }
+    const parsed = JSON.parse(raw);
+    const methods = Array.isArray(parsed.methods) ? parsed.methods : [];
+    if (methods.length === 0) {
+      return getDefaultPaymentMethodsState();
+    }
+    return {
+      methods,
+      defaultMethodId: parsed.defaultMethodId ?? methods[0]?.id ?? null,
+    };
+  } catch {
+    return getDefaultPaymentMethodsState();
+  }
+}
+
+export function setStoredPaymentMethods(methods, defaultMethodId) {
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify({
+      methods,
+      defaultMethodId,
+    }),
+  );
+}

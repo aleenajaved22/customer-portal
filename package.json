@@ -1,0 +1,18 @@
+{
+  "name": "customer-portal-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "signal-design-system/packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=portal",
+    "build": "npm run build --workspace=portal",
+    "preview": "npm run preview --workspace=portal"
+  },
+  "overrides": {
+    "react-is": "18.3.1",
+    "@mui/material": "5.15.21",
+    "@mui/icons-material": "5.15.21"
+  }
+}
