@@ -182,7 +182,7 @@ function SegmentLegendItem({ segment, isActive, onSelect }) {
       spacing={0.75}
       sx={{
         minWidth: 0,
-        width: '100%',
+        flexShrink: 0,
         textAlign: 'left',
         font: 'inherit',
         p: '4px 6px',
@@ -329,26 +329,18 @@ export function InvoiceStatsSegmentRow({
         })}
       </Stack>
 
-      <Stack direction="row" spacing={0.75} sx={{ width: '100%' }}>
-        {segments.map((segment) => {
-          const widthPercent = totalValue === 0 ? 100 / segments.length : (segment.value / safeTotal) * 100;
-
-          return (
-            <Box
-              key={segment.id}
-              sx={{
-                flex: `${widthPercent} 1 0`,
-                minWidth: segment.value > 0 ? 48 : 0,
-              }}
-            >
-              <SegmentLegendItem
-                segment={segment}
-                isActive={activeStatus === segment.label}
-                onSelect={handleSelect}
-              />
-            </Box>
-          );
-        })}
+      {/* Evenly spaced legend. Positioning items proportionally under their bar
+          segment left erratic gaps — a 28% segment pushed its label to the far
+          right — and the bar already carries the proportion. */}
+      <Stack direction="row" spacing={4} sx={{ width: '100%', flexWrap: 'wrap' }}>
+        {segments.map((segment) => (
+          <SegmentLegendItem
+            key={segment.id}
+            segment={segment}
+            isActive={activeStatus === segment.label}
+            onSelect={handleSelect}
+          />
+        ))}
       </Stack>
     </Box>
   );

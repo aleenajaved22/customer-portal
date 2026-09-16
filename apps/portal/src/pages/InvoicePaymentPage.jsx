@@ -10,7 +10,7 @@ import { PortalShell } from '../components/PortalShell';
 import { PaymentMethodModal } from '../components/PaymentMethodModal';
 import { InvoicePaymentBanner } from '../components/InvoicePaymentBanner';
 import { InvoicePreviewDrawer } from '../components/InvoicePreviewDrawer';
-import { InvoiceStatsLayoutToggle, InvoiceStatsRow, InvoiceStatsSegmentRow } from '../components/InvoiceStatsRow';
+import { InvoiceStatsRow, InvoiceStatsSegmentRow } from '../components/InvoiceStatsRow';
 import { InvoiceBoardList } from '../components/InvoiceBoardList';
 import { InvoicesToolbar } from '../components/InvoicesToolbar';
 import { EmptyState, InvoicesTable } from '../components/design-system';
@@ -321,17 +321,6 @@ export function InvoicePaymentPage() {
         onPayNow={(invoice) => {
           closeInvoicePreview();
           openPaymentModalForInvoice(invoice);
-        }}
-      />
-      <InvoiceStatsLayoutToggle
-        layout={statsLayout}
-        onChange={(next) => {
-          setStatsLayout(next);
-          try {
-            localStorage.setItem(STATS_LAYOUT_STORAGE_KEY, next);
-          } catch {
-            /* ignore */
-          }
         }}
       />
     </PortalShell>
