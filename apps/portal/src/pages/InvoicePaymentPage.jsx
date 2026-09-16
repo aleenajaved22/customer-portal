@@ -211,7 +211,10 @@ export function InvoicePaymentPage() {
           ) : (
             <InvoiceStatsSegmentRow
               totalLabel={statusSegmentStats.totalLabel}
+              outstandingLabel={statusSegmentStats.outstandingLabel}
               segments={statusSegmentStats.segments}
+              activeStatus={status}
+              onSelectStatus={setStatus}
             />
           )}
         </Box>

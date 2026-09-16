@@ -307,12 +307,14 @@ export function getInvoiceDashboardCards(invoices = mockInvoices) {
 }
 
 export function getInvoiceStatusSegmentStats(invoices = mockInvoices) {
+  // Ordered by urgency, not by settlement: Overdue leads in both the bar and the
+  // legend beneath it, which stay in step so each legend item sits under its segment.
   const segments = [
     {
-      id: 'paid',
-      label: 'Paid',
-      barColor: SEGMENT_BAR_FILL.paid,
-      dotColor: SEGMENT_BAR_FILL.paid,
+      id: 'overdue',
+      label: 'Overdue',
+      barColor: SEGMENT_BAR_FILL.overdue,
+      dotColor: SEGMENT_BAR_FILL.overdue,
     },
     {
       id: 'pending',
@@ -321,25 +323,36 @@ export function getInvoiceStatusSegmentStats(invoices = mockInvoices) {
       dotColor: SEGMENT_BAR_FILL.pending,
     },
     {
-      id: 'overdue',
-      label: 'Overdue',
-      barColor: SEGMENT_BAR_FILL.overdue,
-      dotColor: SEGMENT_BAR_FILL.overdue,
+      id: 'paid',
+      label: 'Paid',
+      barColor: SEGMENT_BAR_FILL.paid,
+      dotColor: SEGMENT_BAR_FILL.paid,
     },
   ].map((segment) => {
-    const value = sumInvoicesByStatus(invoices, segment.label);
+    const matching = filterInvoicesByStatus(invoices, segment.label);
+    const value = sumInvoiceAmounts(matching);
     return {
       ...segment,
       value,
+      count: matching.length,
       amountLabel: formatInvoiceTotal(value),
     };
   });
 
   const totalValue = segments.reduce((sum, segment) => sum + segment.value, 0);
   const safeTotal = totalValue || 1;
+  /** What the customer still owes — everything not yet paid. */
+  const outstandingValue = segments
+    .filter((segment) => segment.label !== 'Paid')
+    .reduce((sum, segment) => sum + segment.value, 0);
+  const outstandingCount = segments
+    .filter((segment) => segment.label !== 'Paid')
+    .reduce((sum, segment) => sum + segment.count, 0);
 
   return {
     totalLabel: formatInvoiceTotal(totalValue),
+    outstandingLabel: formatInvoiceTotal(outstandingValue),
+    outstandingCount,
     segments: segments.map((segment) => ({
       ...segment,
       percent: totalValue === 0 ? 0 : Math.round((segment.value / safeTotal) * 100),

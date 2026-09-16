@@ -145,11 +145,56 @@ export function InvoiceStatsRow({ cards, stackedLayout = false }) {
   );
 }
 
-function SegmentLegendItem({ segment }) {
+/**
+ * Legend emphasis tiers: Overdue leads (it has a deadline), Pending sits at the
+ * default weight, Paid recedes — it is settled and needs no action.
+ */
+const EMPHASIS_BY_STATUS = {
+  Overdue: 'primary',
+  Pending: 'default',
+  Paid: 'secondary',
+};
+
+function SegmentLegendItem({ segment, isActive, onSelect }) {
   const theme = useTheme();
+  const emphasis = EMPHASIS_BY_STATUS[segment.label] ?? 'default';
+  const labelSx = {
+    primary: { color: theme.palette.textAlert, fontWeight: 500 },
+    default: { color: theme.palette.textSecondary3, fontWeight: 400 },
+    secondary: { color: theme.palette.textSecondary3, fontWeight: 400 },
+  }[emphasis];
+  const amountSx = {
+    primary: { color: theme.palette.textAlert, fontWeight: 700 },
+    default: { color: theme.palette.textPrimary, fontWeight: 600 },
+    secondary: { color: theme.palette.textSecondary2, fontWeight: 500 },
+  }[emphasis];
+  const interactive = Boolean(onSelect);
+  const countLabel = `${segment.count} ${segment.count === 1 ? 'invoice' : 'invoices'}`;
 
   return (
-    <Stack direction="row" spacing={0.75} sx={{ minWidth: 0, width: '100%' }}>
+    <Stack
+      component={interactive ? 'button' : 'div'}
+      type={interactive ? 'button' : undefined}
+      onClick={interactive ? () => onSelect(segment.label) : undefined}
+      aria-pressed={interactive ? isActive : undefined}
+      aria-label={interactive ? `Filter by ${segment.label}: ${segment.amountLabel}, ${countLabel}` : undefined}
+      direction="row"
+      spacing={0.75}
+      sx={{
+        minWidth: 0,
+        width: '100%',
+        textAlign: 'left',
+        font: 'inherit',
+        p: '4px 6px',
+        ml: '-6px',
+        border: 'none',
+        borderRadius: '6px',
+        backgroundColor: isActive ? theme.palette.surfaceGreySubtle : 'transparent',
+        cursor: interactive ? 'pointer' : 'default',
+        transition: 'background-color 0.15s ease',
+        '&:hover': interactive ? { backgroundColor: theme.palette.surfaceGreySubtle } : undefined,
+      }}
+    >
       <Box
         sx={{
           height: '18px',
@@ -169,31 +214,51 @@ function SegmentLegendItem({ segment }) {
       </Box>
       <Box sx={{ minWidth: 0 }}>
         <Typography
-          sx={{ fontSize: 13, fontWeight: 400, lineHeight: '18px', color: theme.palette.textSecondary3 }}
+          sx={{
+            fontSize: 12,
+            lineHeight: '18px',
+            ...labelSx,
+          }}
         >
           {segment.label}
         </Typography>
         <Typography
           sx={{
             fontSize: 14,
-            fontWeight: 600,
             lineHeight: '20px',
             fontVariantNumeric: 'tabular-nums',
-            color: theme.palette.textPrimary,
             mt: '2px',
+            ...amountSx,
           }}
         >
-          {segment.amountLabel} · {segment.percent}%
+          {segment.amountLabel}
+          <Box
+            component="span"
+            sx={{ fontWeight: 400, color: theme.palette.textSecondary3 }}
+          >
+            {' · '}
+            {countLabel}
+          </Box>
         </Typography>
       </Box>
     </Stack>
   );
 }
 
-export function InvoiceStatsSegmentRow({ totalLabel, segments }) {
+export function InvoiceStatsSegmentRow({
+  totalLabel,
+  outstandingLabel,
+  segments,
+  activeStatus = '',
+  onSelectStatus,
+}) {
   const theme = useTheme();
   const totalValue = segments.reduce((sum, segment) => sum + segment.value, 0);
   const safeTotal = totalValue || 1;
+  /** Clicking the active segment clears the filter rather than re-applying it. */
+  const handleSelect = onSelectStatus
+    ? (label) => onSelectStatus(activeStatus === label ? '' : label)
+    : undefined;
 
   return (
     <Box
@@ -206,31 +271,38 @@ export function InvoiceStatsSegmentRow({ totalLabel, segments }) {
         borderBottom: `1px solid ${theme.palette.borderSubtle1}`,
       }}
     >
-      <Typography
-        sx={{
-          mb: 1.25,
-          fontSize: 22,
-          fontWeight: 700,
-          lineHeight: '28px',
-          letterSpacing: '-0.02em',
-          fontVariantNumeric: 'tabular-nums',
-          color: theme.palette.textPrimary,
-        }}
-      >
-        {totalLabel}
-        <Box
-          component="span"
+      <Box sx={{ mb: 1.25 }}>
+        <Typography
+          sx={{ fontSize: 12, fontWeight: 400, lineHeight: '18px', color: theme.palette.textSecondary3 }}
+        >
+          Outstanding balance
+        </Typography>
+        <Typography
           sx={{
-            ml: '6px',
-            fontSize: 13,
-            fontWeight: 400,
-            letterSpacing: 'normal',
-            color: theme.palette.textSecondary3,
+            mt: '2px',
+            fontSize: 22,
+            fontWeight: 700,
+            lineHeight: '28px',
+            letterSpacing: '-0.02em',
+            fontVariantNumeric: 'tabular-nums',
+            color: theme.palette.textPrimary,
           }}
         >
-          This month
-        </Box>
-      </Typography>
+          {outstandingLabel}
+          <Box
+            component="span"
+            sx={{
+              ml: '6px',
+              fontSize: 12,
+              fontWeight: 400,
+              letterSpacing: 'normal',
+              color: theme.palette.textSecondary3,
+            }}
+          >
+            / {totalLabel}
+          </Box>
+        </Typography>
+      </Box>
 
       <Stack
         direction="row"
@@ -247,7 +319,9 @@ export function InvoiceStatsSegmentRow({ totalLabel, segments }) {
                 minWidth: segment.value > 0 ? 5 : 0,
                 height: '100%',
                 backgroundColor: segment.barColor,
-                opacity: segment.value > 0 ? 1 : 0.35,
+                opacity:
+                  segment.value === 0 ? 0.35 : activeStatus && activeStatus !== segment.label ? 0.3 : 1,
+                transition: 'opacity 0.15s ease',
               }}
               title={`${segment.label}: ${segment.amountLabel}`}
             />
@@ -267,7 +341,11 @@ export function InvoiceStatsSegmentRow({ totalLabel, segments }) {
                 minWidth: segment.value > 0 ? 48 : 0,
               }}
             >
-              <SegmentLegendItem segment={segment} />
+              <SegmentLegendItem
+                segment={segment}
+                isActive={activeStatus === segment.label}
+                onSelect={handleSelect}
+              />
             </Box>
           );
         })}
