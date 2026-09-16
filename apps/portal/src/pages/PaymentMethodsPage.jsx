@@ -5,6 +5,7 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PortalShell } from '../components/PortalShell';
 import { AddPaymentMethodModal } from '../components/AddPaymentMethodModal';
 import { PaymentMethodListRow } from '../components/PaymentMethodListRow';
@@ -42,6 +43,7 @@ function getEditFormValues(method) {
 
 export function PaymentMethodsPage() {
   const theme = useTheme();
+  const navigate = useNavigate();
   const { methods, defaultMethodId, addPaymentMethod, removePaymentMethod, updatePaymentMethod } =
     usePaymentMethods();
   const [addOpen, setAddOpen] = useState(false);
@@ -65,6 +67,8 @@ export function PaymentMethodsPage() {
     <PortalShell activeNav="invoice-payment">
       <Stack spacing={2.5} sx={{ width: '100%' }}>
         <PageHeader
+          onBack={() => navigate('/invoice-payment')}
+          backLabel="Back to invoices"
           title="Card Management"
           description="Saved payment methods for this account. Choose which one to use when you pay an invoice."
           actions={
@@ -79,7 +83,11 @@ export function PaymentMethodsPage() {
         />
 
         <Box>
-          {PAYMENT_METHOD_CATEGORIES.map((category, categoryIndex) => {
+          {PAYMENT_METHOD_CATEGORIES.filter((category) =>
+            methods.some((method) => method.typeId === category.typeId),
+          ).map((category, categoryIndex) => {
+            // A category with nothing in it is dropped entirely — heading included —
+            // so removing the last method never leaves an empty section behind.
             const rows = methods.filter((method) => method.typeId === category.typeId);
 
             return (
