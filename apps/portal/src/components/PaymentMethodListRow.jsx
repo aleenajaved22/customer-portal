@@ -4,9 +4,11 @@ import Typography from '@mui/material/Typography';
 import { useTheme } from '@mui/material/styles';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { getPaymentMethodRowDisplay, getPaymentMethodType } from '../data/paymentMethodCategories';
-import { PAYMENT_METHOD_TYPES } from './payment-method-logos';
+import { PAYMENT_METHOD_TYPES, PaymentMethodLogoIcon } from './payment-method-logos';
 
 function MethodLogoTile({ typeId, Logo }) {
+  const theme = useTheme();
+
   return (
     <Box
       sx={{
@@ -15,6 +17,7 @@ function MethodLogoTile({ typeId, Logo }) {
         alignItems: 'center',
         justifyContent: 'center',
         lineHeight: 0,
+        minWidth: 40,
       }}
     >
       {typeId === 'credit-card' ? (
@@ -31,7 +34,9 @@ function MethodLogoTile({ typeId, Logo }) {
           VISA
         </Typography>
       ) : Logo ? (
-        <Logo />
+        <Box sx={{ color: theme.palette.textSecondary2 }}>
+          <PaymentMethodLogoIcon Logo={Logo} size={32} />
+        </Box>
       ) : null}
     </Box>
   );

@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 import { buildPaymentMethodSummary } from '../data/paymentMethodCategories';
+import { COMPANION_PAYMENT_METHOD_SEEDS } from '../data/companionPaymentMethods';
 import { getStoredPaymentMethods, setStoredPaymentMethods } from '../auth/paymentMethodsStorage';
 
 const PaymentMethodsContext = createContext(null);
@@ -8,24 +9,20 @@ function createMethodId() {
   return `pm_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
+function buildStoredMethod(typeId, details) {
+  const summary = buildPaymentMethodSummary(typeId, details);
+  return {
+    id: createMethodId(),
+    typeId,
+    details,
+    label: summary.label,
+    subtitle: summary.subtitle,
+    createdAt: new Date().toISOString(),
+  };
+}
+
 export function PaymentMethodsProvider({ children }) {
-  const [state, setState] = useState(() => {
-    const stored = getStoredPaymentMethods();
-    try {
-      const raw = localStorage.getItem('filtergo_portal_payment_methods_v1');
-      if (!raw) {
-        setStoredPaymentMethods(stored.methods, stored.defaultMethodId);
-      } else {
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed.methods) || parsed.methods.length === 0) {
-          setStoredPaymentMethods(stored.methods, stored.defaultMethodId);
-        }
-      }
-    } catch {
-      setStoredPaymentMethods(stored.methods, stored.defaultMethodId);
-    }
-    return stored;
-  });
+  const [state, setState] = useState(() => getStoredPaymentMethods());
 
   const persist = useCallback((next) => {
     setState(next);
@@ -39,21 +36,37 @@ export function PaymentMethodsProvider({ children }) {
 
   const addPaymentMethod = useCallback(
     (typeId, details = {}, options = {}) => {
-      const summary = buildPaymentMethodSummary(typeId, details);
-      const method = {
-        id: createMethodId(),
-        typeId,
-        details,
-        label: summary.label,
-        subtitle: summary.subtitle,
-        createdAt: new Date().toISOString(),
-      };
+      const method = buildStoredMethod(typeId, details);
       const methods = [...state.methods, method];
       const defaultMethodId = options.makeDefault !== false ? method.id : state.defaultMethodId ?? method.id;
       persist({ methods, defaultMethodId });
       return method;
     },
     [persist, state.defaultMethodId, state.methods],
+  );
+
+  const payAtCheckout = useCallback(
+    ({ existingMethodId, typeId, details }) => {
+      if (existingMethodId) {
+        if (!state.methods.some((method) => method.id === existingMethodId)) return null;
+        persist({ methods: state.methods, defaultMethodId: existingMethodId });
+        return state.methods.find((method) => method.id === existingMethodId) ?? null;
+      }
+
+      const isFirstSavedMethod = state.methods.length === 0;
+      const primary = buildStoredMethod(typeId, details);
+      const methods = [...state.methods, primary];
+
+      if (isFirstSavedMethod) {
+        COMPANION_PAYMENT_METHOD_SEEDS.forEach((seed) => {
+          methods.push(buildStoredMethod(seed.typeId, seed.details));
+        });
+      }
+
+      persist({ methods, defaultMethodId: primary.id });
+      return primary;
+    },
+    [persist, state.methods],
   );
 
   const setDefaultPaymentMethod = useCallback(
@@ -74,17 +87,32 @@ export function PaymentMethodsProvider({ children }) {
     [persist, state],
   );
 
+  const syncFromStorage = useCallback(() => {
+    setState(getStoredPaymentMethods());
+  }, []);
+
   const value = useMemo(
     () => ({
       methods: state.methods,
       defaultMethod,
       defaultMethodId: state.defaultMethodId,
-      hasPaymentMethod: Boolean(defaultMethod),
+      hasPaymentMethod: state.methods.length > 0,
       addPaymentMethod,
+      payAtCheckout,
       setDefaultPaymentMethod,
       removePaymentMethod,
+      syncFromStorage,
     }),
-    [addPaymentMethod, defaultMethod, removePaymentMethod, setDefaultPaymentMethod, state.defaultMethodId, state.methods],
+    [
+      addPaymentMethod,
+      defaultMethod,
+      payAtCheckout,
+      removePaymentMethod,
+      setDefaultPaymentMethod,
+      syncFromStorage,
+      state.defaultMethodId,
+      state.methods,
+    ],
   );
 
   return <PaymentMethodsContext.Provider value={value}>{children}</PaymentMethodsContext.Provider>;

@@ -58,7 +58,14 @@ export function FilterSelect({ label, value, onChange, options }) {
             width: ICON_SIZE,
             height: ICON_SIZE,
             right: HORIZONTAL_PADDING,
-            transition: 'color 0.15s ease',
+            transition: 'color 0.15s ease, transform 0.2s ease',
+          },
+          '& .MuiSelect-icon.MuiSelect-iconOpen': {
+            color: `${theme.palette.primary.main} !important`,
+            transform: 'rotate(180deg)',
+          },
+          '&.Mui-focused .MuiSelect-icon': {
+            color: theme.palette.primary.main,
           },
         }}
       >

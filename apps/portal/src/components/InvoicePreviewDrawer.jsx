@@ -3,13 +3,12 @@ import IconButton from '@mui/material/IconButton';
 import { useTheme } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import { Button, Drawer } from './design-system';
-import { InvoiceDetailPreview } from './InvoiceDetailPreview';
 import { InvoiceDocumentPreview } from './InvoiceDocumentPreview';
+import { getInvoicePdfUrl } from '../data/invoiceDocumentMock';
 
-export function InvoicePreviewDrawer({ open, invoice, onClose }) {
+export function InvoicePreviewDrawer({ open, invoice, onClose, onPayNow }) {
   const theme = useTheme();
-  const isPaid = invoice?.status === 'Paid';
-  const drawerWidth = isPaid ? 'min(869px, 96vw)' : 'min(1157px, 96vw)';
+  const drawerWidth = 'min(869px, 96vw)';
 
   return (
     <Drawer
@@ -46,7 +45,7 @@ export function InvoicePreviewDrawer({ open, invoice, onClose }) {
           top: 20,
           right: 20,
           zIndex: 2,
-          color: isPaid ? '#fff' : theme.palette.textSecondary2,
+          color: theme.palette.textSecondary2,
         }}
       >
         <CloseIcon sx={{ fontSize: 24 }} />
@@ -60,26 +59,37 @@ export function InvoicePreviewDrawer({ open, invoice, onClose }) {
           backgroundColor: theme.palette.surfaceWhite,
         }}
       >
-        {isPaid ? <InvoiceDocumentPreview invoice={invoice} /> : <InvoiceDetailPreview invoice={invoice} />}
+        {open && invoice ? <InvoiceDocumentPreview key={invoice.id} invoice={invoice} /> : null}
       </Box>
 
-      {isPaid ? (
-        <Box
-          sx={{
-            borderTop: `1px solid ${theme.palette.borderSubtle1}`,
-            px: 4,
-            py: 1,
-            display: 'flex',
-            justifyContent: 'flex-end',
-            backgroundColor: theme.palette.surfaceWhite,
-            flexShrink: 0,
-          }}
+      <Box
+        sx={{
+          borderTop: `1px solid ${theme.palette.borderSubtle1}`,
+          px: 4,
+          py: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 2,
+          backgroundColor: theme.palette.surfaceWhite,
+          flexShrink: 0,
+        }}
+      >
+        <Button
+          variant="secondaryBlue"
+          component="a"
+          href={invoice ? getInvoicePdfUrl(invoice) : undefined}
+          download
+          sx={{ minWidth: 'auto' }}
         >
-          <Button variant="secondaryBlue" sx={{ minWidth: 'auto' }}>
-            Download Invoice
+          Download Invoice
+        </Button>
+        {invoice && invoice.status !== 'Paid' ? (
+          <Button variant="primary" onClick={() => onPayNow?.(invoice)} sx={{ minWidth: 105 }}>
+            Pay now
           </Button>
-        </Box>
-      ) : null}
+        ) : null}
+      </Box>
     </Drawer>
   );
 }

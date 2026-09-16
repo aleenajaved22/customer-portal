@@ -9,6 +9,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import CreditCardOutlinedIcon from '@mui/icons-material/CreditCardOutlined';
+import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -67,7 +68,7 @@ export function UserAccountMenu() {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
   const displayName = session?.name || 'User';
-  const roleLabel = 'Franchise Owner';
+  const roleLabel = 'Admin';
 
   const close = () => setAnchorEl(null);
 
@@ -107,7 +108,7 @@ export function UserAccountMenu() {
         slotProps={{
           paper: {
             sx: {
-              mt: 1,
+              mt: 0,
               width: 309,
               maxWidth: 'calc(100vw - 24px)',
               borderRadius: '8px',
@@ -143,14 +144,24 @@ export function UserAccountMenu() {
         </Box>
 
         <Stack spacing={2.25} sx={{ px: '14px', py: 2 }}>
-          <MenuRow
-            icon={<CreditCardOutlinedIcon sx={{ fontSize: 20 }} />}
-            label="Card Management"
-            onClick={() => {
-              close();
-              navigate('/payment-methods');
-            }}
-          />
+          <Stack sx={{ gap: '4px' }}>
+            <MenuRow
+              icon={<CreditCardOutlinedIcon sx={{ fontSize: 20 }} />}
+              label="Card Management"
+              onClick={() => {
+                close();
+                navigate('/payment-methods');
+              }}
+            />
+            <Divider sx={{ borderColor: theme.palette.borderSubtle1 }} />
+            <MenuRow
+              icon={<PersonOutlinedIcon sx={{ fontSize: 20 }} />}
+              label="User Management"
+              onClick={() => {
+                close();
+              }}
+            />
+          </Stack>
 
           <Divider sx={{ borderColor: theme.palette.borderSubtle1 }} />
 

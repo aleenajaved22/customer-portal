@@ -70,18 +70,27 @@ export function PaymentMethodsPage() {
                       No {category.title.toLowerCase()} saved yet.
                     </Typography>
                   ) : (
-                    <Stack spacing={0}>
-                      {categoryMethods.map((method, index) => (
-                        <PaymentMethodListRow
-                          key={method.id}
-                          method={method}
-                          isActive={method.id === defaultMethodId}
-                          onActivate={setDefaultPaymentMethod}
-                          onRemove={removePaymentMethod}
-                          isFirst={index === 0}
-                        />
-                      ))}
-                    </Stack>
+                    <Box
+                      sx={{
+                        border: `1px solid ${theme.palette.borderSubtle1}`,
+                        borderRadius: '12px',
+                        backgroundColor: theme.palette.surfaceWhite,
+                        overflow: 'hidden',
+                      }}
+                    >
+                      <Stack spacing={0}>
+                        {categoryMethods.map((method, index) => (
+                          <PaymentMethodListRow
+                            key={method.id}
+                            method={method}
+                            isActive={method.id === defaultMethodId}
+                            onActivate={setDefaultPaymentMethod}
+                            onRemove={removePaymentMethod}
+                            isFirst={index === 0}
+                          />
+                        ))}
+                      </Stack>
+                    </Box>
                   )}
                 </Box>
               </Box>
@@ -99,7 +108,11 @@ export function PaymentMethodsPage() {
         onSave={(typeId, details) =>
           addPaymentMethod(typeId, details, { makeDefault: methods.length === 0 || !defaultMethodId })
         }
-        title={addCategory ? `Add ${getPaymentMethodType(addCategory, PAYMENT_METHOD_TYPES)?.label ?? 'payment method'}` : 'Add payment method'}
+        title={
+          addCategory
+            ? `Add ${getPaymentMethodType(addCategory, PAYMENT_METHOD_TYPES)?.label ?? 'payment method'}`
+            : 'Add payment method'
+        }
         initialTypeId={addCategory ?? undefined}
       />
     </PortalShell>

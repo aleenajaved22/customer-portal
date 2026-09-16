@@ -2,6 +2,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
 import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { FilterSelect } from './FilterSelect';
 import { Button, Search } from './design-system';
 import { invoiceSiteFilterOptions, invoiceStatusFilterOptions } from '../data/mockInvoices';
@@ -56,9 +57,6 @@ export function InvoicesToolbar({
               fontSize: 14,
               fontWeight: 500,
             },
-            // Theme ships the placeholder at 16px/400 #cccccc (1.61:1 on white) from a
-            // selector of equal specificity, so match it with a more specific one:
-            // filter type scale, and grey.500 for WCAG AA (5.37:1).
             '& .MuiOutlinedInput-root .MuiInputBase-input::placeholder': {
               fontSize: 14,
               fontWeight: 500,
@@ -94,9 +92,11 @@ export function InvoicesToolbar({
         <Button
           variant="primary"
           onClick={onPayNow}
+          endIcon={<ArrowForwardIcon sx={{ fontSize: 18 }} />}
           sx={{
             alignSelf: { xs: 'flex-start', md: 'center' },
             minWidth: 105,
+            '& .MuiButton-endIcon': { ml: 0.75 },
           }}
         >
           Pay Now

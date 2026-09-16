@@ -13,15 +13,14 @@ export function InvoiceViewIconButton({ onClick, label }) {
       sx={{
         width: 28,
         height: 28,
-        p: 0.75,
-        borderRadius: '8px',
-        border: `1px solid ${theme.palette.borderSubtle2}`,
-        backgroundColor: theme.palette.surfaceGreySubtle,
+        p: 0.5,
+        borderRadius: 0,
+        border: 'none',
+        backgroundColor: 'transparent',
         color: theme.palette.textSecondary2,
         '&:hover': {
-          backgroundColor: theme.palette.surfaceWhite,
-          borderColor: theme.palette.borderSubtle2,
-          color: theme.palette.textSecondary2,
+          backgroundColor: 'transparent',
+          color: theme.palette.textPrimary,
         },
       }}
     >

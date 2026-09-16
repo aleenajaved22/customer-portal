@@ -228,7 +228,7 @@ export function InvoiceStatsSegmentRow({ totalLabel, segments }) {
             color: theme.palette.textSecondary3,
           }}
         >
-          total
+          This month
         </Box>
       </Typography>
 

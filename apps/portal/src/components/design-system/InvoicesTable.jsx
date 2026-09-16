@@ -6,9 +6,11 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
 import Typography from '@mui/material/Typography';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import Box from '@mui/material/Box';
-import { useTheme } from '@mui/material/styles';
+import Stack from '@mui/material/Stack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { alpha, useTheme } from '@mui/material/styles';
+import { Button } from '@signal/ui';
 import { Checkbox } from './Checkbox';
 import { ContractChip } from './ContractChip';
 import { InvoiceStatusChip } from './InvoiceStatusChip';
@@ -23,14 +25,36 @@ export function InvoicesTable({
   onToggleRow,
   onToggleAll,
   onViewInvoice,
+  onViewInvoiceDocument,
+  onPayInvoice,
 }) {
   const theme = useTheme();
+  const rowHoverBackground = alpha(theme.palette.textPrimary, 0.035);
   const cellPaddingX = '24px';
   const bodyCellPy = 2;
   const checkboxColumnWidth = 64;
-  const siteColumnWidth = 194;
-  const actionsColumnWidth = 72;
+  const actionsColumnWidth = 70;
+  const dataColumnCount = 6;
+  const fixedColumnsWidth = checkboxColumnWidth + actionsColumnWidth;
+  const equalDataColumnWidth = `calc((100% - ${fixedColumnsWidth}px) / ${dataColumnCount})`;
   const tableMinWidth = 1100;
+
+  const equalDataColumnSx = {
+    width: equalDataColumnWidth,
+    minWidth: equalDataColumnWidth,
+    maxWidth: equalDataColumnWidth,
+    boxSizing: 'border-box',
+  };
+
+  const amountCellSx = {
+    ...equalDataColumnSx,
+    whiteSpace: 'nowrap',
+  };
+
+  const statusCellSx = {
+    ...equalDataColumnSx,
+    whiteSpace: 'nowrap',
+  };
   const isInvoiceSelectable = (invoice) => invoice.status !== 'Paid';
   const selectableInvoices = invoices.filter(isInvoiceSelectable);
   const allSelected =
@@ -81,10 +105,10 @@ export function InvoicesTable({
 
   const checkboxSx = {
     p: 0,
-    width: 16,
-    height: 16,
+    width: 18,
+    height: 18,
     '& .MuiSvgIcon-root': {
-      fontSize: 16,
+      fontSize: 18,
     },
     '&.Mui-disabled': {
       color: theme.palette.action.disabled,
@@ -123,37 +147,31 @@ export function InvoicesTable({
     zIndex: 2,
     backgroundColor: theme.palette.surfaceWhite,
     'tbody tr:hover &': {
-      backgroundColor: theme.palette.surfaceGreySubtle,
+      backgroundColor: rowHoverBackground,
     },
   };
 
-  const stickySiteHeaderSx = {
+  const stickyInvoiceHeaderSx = {
     ...headerCellSx,
+    ...equalDataColumnSx,
     position: 'sticky',
     left: checkboxColumnWidth,
     zIndex: 3,
-    width: siteColumnWidth,
-    minWidth: siteColumnWidth,
-    maxWidth: siteColumnWidth,
-    boxSizing: 'border-box',
     boxShadow: stickyEdgeShadow,
   };
 
-  const stickySiteBodySx = {
+  const stickyInvoiceBodySx = {
+    ...equalDataColumnSx,
     position: 'sticky',
     left: checkboxColumnWidth,
     zIndex: 2,
-    width: siteColumnWidth,
-    minWidth: siteColumnWidth,
-    maxWidth: siteColumnWidth,
-    boxSizing: 'border-box',
     px: cellPaddingX,
     py: bodyCellPy,
     borderBottom: `1px solid ${theme.palette.borderSubtle1}`,
     backgroundColor: theme.palette.surfaceWhite,
     boxShadow: stickyEdgeShadow,
     'tbody tr:hover &': {
-      backgroundColor: theme.palette.surfaceGreySubtle,
+      backgroundColor: rowHoverBackground,
     },
   };
 
@@ -182,27 +200,57 @@ export function InvoicesTable({
     boxSizing: 'border-box',
     px: 1.5,
     py: bodyCellPy,
-    textAlign: 'center',
+    textAlign: 'right',
     verticalAlign: 'middle',
+    overflow: 'visible',
     borderBottom: `1px solid ${theme.palette.borderSubtle1}`,
     backgroundColor: theme.palette.surfaceWhite,
     boxShadow: stickyRightEdgeShadow,
     'tbody tr:hover &': {
-      backgroundColor: theme.palette.surfaceGreySubtle,
+      backgroundColor: rowHoverBackground,
     },
   };
+
+  const payNowHoverRowSx = {
+    '& .invoice-table-pay-now': {
+      maxWidth: 0,
+      opacity: 0,
+      overflow: 'hidden',
+      pointerEvents: 'none',
+      paddingLeft: 0,
+      paddingRight: 0,
+      minWidth: 0,
+      transition: 'opacity 0.15s ease, max-width 0.2s ease, padding 0.2s ease',
+    },
+    '&:hover .invoice-table-pay-now, &:focus-within .invoice-table-pay-now': {
+      maxWidth: 120,
+      opacity: 1,
+      pointerEvents: 'auto',
+      paddingLeft: '6px',
+      paddingRight: '6px',
+    },
+    '@media (hover: none)': {
+      '& .invoice-table-pay-now': {
+        maxWidth: 120,
+        opacity: 1,
+        pointerEvents: 'auto',
+        paddingLeft: '6px',
+        paddingRight: '6px',
+      },
+    },
+  };
+
+  const isPayableInvoice = (invoice) =>
+    invoice.status === 'Pending' || invoice.status === 'Overdue';
 
   return (
     <TableContainer sx={{ overflowX: 'auto', maxWidth: '100%' }}>
       <Table sx={{ tableLayout: 'fixed', width: '100%', minWidth: tableMinWidth }}>
         <colgroup>
           <col style={{ width: checkboxColumnWidth }} />
-          <col style={{ width: siteColumnWidth }} />
-          <col style={{ width: 182 }} />
-          <col style={{ width: '22%' }} />
-          <col style={{ width: '13%' }} />
-          <col style={{ width: '11%' }} />
-          <col style={{ width: '20%' }} />
+          {Array.from({ length: dataColumnCount }, (_, index) => (
+            <col key={`data-col-${index}`} style={{ width: equalDataColumnWidth }} />
+          ))}
           <col style={{ width: actionsColumnWidth }} />
         </colgroup>
         <TableHead>
@@ -219,17 +267,7 @@ export function InvoicesTable({
                 sx={checkboxSx}
               />
             </TableCell>
-            <TableCell sx={stickySiteHeaderSx} sortDirection={sortField === 'site' ? sortDirection : false}>
-              <TableSortLabel
-                active={sortField === 'site'}
-                direction={sortField === 'site' ? sortDirection : 'desc'}
-                onClick={() => onSort('site')}
-                sx={sortLabelSx}
-              >
-                Site Name
-              </TableSortLabel>
-            </TableCell>
-            <TableCell sx={{ ...headerCellSx, width: 182 }} sortDirection={sortField === 'invoiceNumber' ? sortDirection : false}>
+            <TableCell sx={stickyInvoiceHeaderSx} sortDirection={sortField === 'invoiceNumber' ? sortDirection : false}>
               <TableSortLabel
                 active={sortField === 'invoiceNumber'}
                 direction={sortField === 'invoiceNumber' ? sortDirection : 'desc'}
@@ -239,7 +277,17 @@ export function InvoicesTable({
                 Invoice Number
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={{ ...headerCellSx, width: '22%' }} sortDirection={sortField === 'contract' ? sortDirection : false}>
+            <TableCell sx={{ ...headerCellSx, ...equalDataColumnSx }} sortDirection={sortField === 'site' ? sortDirection : false}>
+              <TableSortLabel
+                active={sortField === 'site'}
+                direction={sortField === 'site' ? sortDirection : 'desc'}
+                onClick={() => onSort('site')}
+                sx={sortLabelSx}
+              >
+                Site Name
+              </TableSortLabel>
+            </TableCell>
+            <TableCell sx={{ ...headerCellSx, ...equalDataColumnSx }} sortDirection={sortField === 'contract' ? sortDirection : false}>
               <TableSortLabel
                 active={sortField === 'contract'}
                 direction={sortField === 'contract' ? sortDirection : 'desc'}
@@ -249,7 +297,10 @@ export function InvoicesTable({
                 Contract
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={{ ...headerCellSx, width: '13%' }} sortDirection={sortField === 'amount' ? sortDirection : false}>
+            <TableCell
+              sx={{ ...headerCellSx, ...amountCellSx }}
+              sortDirection={sortField === 'amount' ? sortDirection : false}
+            >
               <TableSortLabel
                 active={sortField === 'amount'}
                 direction={sortField === 'amount' ? sortDirection : 'desc'}
@@ -259,7 +310,10 @@ export function InvoicesTable({
                 Amount
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={{ ...headerCellSx, width: '11%' }} sortDirection={sortField === 'status' ? sortDirection : false}>
+            <TableCell
+              sx={{ ...headerCellSx, ...statusCellSx }}
+              sortDirection={sortField === 'status' ? sortDirection : false}
+            >
               <TableSortLabel
                 active={sortField === 'status'}
                 direction={sortField === 'status' ? sortDirection : 'desc'}
@@ -269,7 +323,10 @@ export function InvoicesTable({
                 Status
               </TableSortLabel>
             </TableCell>
-            <TableCell sx={{ ...headerCellSx, width: '20%' }} sortDirection={sortField === 'dueDate' ? sortDirection : false}>
+            <TableCell
+              sx={{ ...headerCellSx, ...equalDataColumnSx, whiteSpace: 'nowrap' }}
+              sortDirection={sortField === 'dueDate' ? sortDirection : false}
+            >
               <TableSortLabel
                 active={sortField === 'dueDate'}
                 direction={sortField === 'dueDate' ? sortDirection : 'desc'}
@@ -287,18 +344,19 @@ export function InvoicesTable({
             <TableRow
               key={invoice.id}
               onClick={() => {
-                if (invoice.status === 'Pending' || invoice.status === 'Overdue') {
+                if (isPayableInvoice(invoice)) {
                   onViewInvoice?.(invoice);
                 }
               }}
               sx={{
                 transition: 'background-color 0.15s ease',
-                cursor: invoice.status === 'Pending' || invoice.status === 'Overdue' ? 'pointer' : 'default',
+                cursor: isPayableInvoice(invoice) ? 'pointer' : 'default',
+                ...(isPayableInvoice(invoice) ? payNowHoverRowSx : {}),
                 '&:hover': {
-                  backgroundColor: theme.palette.surfaceGreySubtle,
+                  backgroundColor: rowHoverBackground,
                 },
                 '&:hover td': {
-                  backgroundColor: theme.palette.surfaceGreySubtle,
+                  backgroundColor: rowHoverBackground,
                 },
                 '& td': {
                   borderBottom: `1px solid ${theme.palette.borderSubtle1}`,
@@ -308,17 +366,6 @@ export function InvoicesTable({
                   px: cellPaddingX,
                 },
                 '&:last-child td': { borderBottom: 0 },
-                ...(invoice.status === 'Pending' || invoice.status === 'Overdue'
-                  ? {
-                      '& .invoice-row-action-arrow': {
-                        opacity: 0,
-                        transition: 'opacity 0.15s ease',
-                      },
-                      '&:hover .invoice-row-action-arrow': {
-                        opacity: 1,
-                      },
-                    }
-                  : {}),
               }}
             >
               <TableCell sx={stickyCheckboxBodySx} onClick={(event) => event.stopPropagation()}>
@@ -334,28 +381,28 @@ export function InvoicesTable({
                   sx={checkboxSx}
                 />
               </TableCell>
-              <TableCell sx={stickySiteBodySx}>
+              <TableCell sx={stickyInvoiceBodySx}>
                 <Typography variant="body2" sx={primaryCellTextSx}>
-                  {invoice.site}
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="body2" sx={secondaryCellTextSx}>
                   {invoice.invoiceNumber}
                 </Typography>
               </TableCell>
-              <TableCell sx={{ verticalAlign: 'middle' }}>
+              <TableCell sx={equalDataColumnSx}>
+                <Typography variant="body2" sx={{ ...secondaryCellTextSx, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {invoice.site}
+                </Typography>
+              </TableCell>
+              <TableCell sx={{ verticalAlign: 'middle', ...equalDataColumnSx }}>
                 <ContractChip label={invoice.contract} />
               </TableCell>
-              <TableCell>
+              <TableCell sx={amountCellSx}>
                 <Typography variant="body2" sx={secondaryCellTextSx}>
                   {invoice.amount}
                 </Typography>
               </TableCell>
-              <TableCell sx={{ verticalAlign: 'middle' }}>
+              <TableCell sx={{ verticalAlign: 'middle', ...statusCellSx }}>
                 <InvoiceStatusChip status={invoice.status} />
               </TableCell>
-              <TableCell>
+              <TableCell sx={{ ...equalDataColumnSx, whiteSpace: 'nowrap' }}>
                 <Typography
                   variant="body2"
                   sx={{
@@ -370,33 +417,41 @@ export function InvoicesTable({
               </TableCell>
               <TableCell
                 sx={stickyActionsBodySx}
-                onClick={(event) => {
-                  if (invoice.status === 'Paid') {
-                    event.stopPropagation();
-                  }
-                }}
+                onClick={(event) => event.stopPropagation()}
               >
-                {invoice.status === 'Paid' ? (
+                <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.75}>
+                  {isPayableInvoice(invoice) ? (
+                    <Button
+                      className="invoice-table-pay-now"
+                      variant="onlyText"
+                      onClick={() => onPayInvoice?.(invoice)}
+                      endIcon={<ArrowForwardIcon sx={{ fontSize: 16 }} />}
+                      sx={{
+                        minWidth: 'auto',
+                        height: 'auto',
+                        py: 0.5,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        lineHeight: 1.25,
+                        whiteSpace: 'nowrap',
+                        flexShrink: 0,
+                        border: 'none',
+                        boxShadow: 'none',
+                        '& .MuiButton-endIcon': { ml: 0.5, color: 'inherit' },
+                        '&:hover': {
+                          backgroundColor: 'transparent',
+                          boxShadow: 'none',
+                        },
+                      }}
+                    >
+                      Pay now
+                    </Button>
+                  ) : null}
                   <InvoiceViewIconButton
-                    label={`View invoice ${invoice.invoiceNumber}`}
-                    onClick={() => onViewInvoice?.(invoice)}
+                    label={`View invoice PDF ${invoice.invoiceNumber}`}
+                    onClick={() => (onViewInvoiceDocument ?? onViewInvoice)?.(invoice)}
                   />
-                ) : invoice.status === 'Pending' || invoice.status === 'Overdue' ? (
-                  <Box
-                    className="invoice-row-action-arrow"
-                    aria-hidden
-                    sx={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 28,
-                      height: 28,
-                      color: theme.palette.success.main,
-                    }}
-                  >
-                    <ArrowForwardIcon sx={{ fontSize: 20 }} />
-                  </Box>
-                ) : null}
+                </Stack>
               </TableCell>
             </TableRow>
           ))}

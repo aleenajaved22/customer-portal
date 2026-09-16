@@ -8,7 +8,7 @@ import { Tab, Tabs } from './design-system';
 
 const NAV_ITEMS = [
   { label: 'Reports', value: 'reports', path: '/reports' },
-  { label: 'Invoice Payment', value: 'invoice-payment', path: '/invoice-payment' },
+  { label: 'Payments', value: 'invoice-payment', path: '/invoice-payment' },
 ];
 
 export function PortalShell({ activeNav = 'reports', banner, mainSx, children }) {
@@ -23,6 +23,7 @@ export function PortalShell({ activeNav = 'reports', banner, mainSx, children })
           backgroundColor: theme.palette.surfaceWhite,
           px: '32px',
           py: '20px',
+          borderBottom: `1px solid ${theme.palette.borderSubtle1}`,
         }}
       >
         <Stack

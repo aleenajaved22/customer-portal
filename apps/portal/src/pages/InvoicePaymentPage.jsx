@@ -10,19 +10,16 @@ import { PortalShell } from '../components/PortalShell';
 import { PaymentMethodModal } from '../components/PaymentMethodModal';
 import { InvoicePaymentBanner } from '../components/InvoicePaymentBanner';
 import { InvoicePreviewDrawer } from '../components/InvoicePreviewDrawer';
-import { PaymentSuccessAnimation } from '../components/PaymentSuccessAnimation';
 import { InvoiceStatsLayoutToggle, InvoiceStatsRow, InvoiceStatsSegmentRow } from '../components/InvoiceStatsRow';
 import { InvoiceBoardList } from '../components/InvoiceBoardList';
 import { InvoicesToolbar } from '../components/InvoicesToolbar';
 import { EmptyState, InvoicesTable } from '../components/design-system';
 import { usePaymentMethods } from '../context/PaymentMethodsContext';
 import {
-  formatInvoiceTotal,
   getInvoiceDashboardCards,
   getInvoiceStatusSegmentStats,
   getPendingInvoices,
   mockInvoices,
-  sumInvoiceAmounts,
 } from '../data/mockInvoices';
 
 const ROWS_PER_PAGE = 8;
@@ -39,7 +36,6 @@ export function InvoicePaymentPage() {
   const [showBanner, setShowBanner] = useState(true);
   const [selectedIds, setSelectedIds] = useState([]);
   const [payModalOpen, setPayModalOpen] = useState(false);
-  const [successPayOpen, setSuccessPayOpen] = useState(false);
   const [invoicesForPayment, setInvoicesForPayment] = useState([]);
   const [previewInvoice, setPreviewInvoice] = useState(null);
   const [previewDrawerOpen, setPreviewDrawerOpen] = useState(false);
@@ -53,12 +49,7 @@ export function InvoicePaymentPage() {
     }
   });
 
-  const { defaultMethod, addPaymentMethod } = usePaymentMethods();
-
-  const paymentTotalLabel = useMemo(
-    () => formatInvoiceTotal(sumInvoiceAmounts(invoicesForPayment)),
-    [invoicesForPayment],
-  );
+  const { defaultMethod, payAtCheckout, syncFromStorage } = usePaymentMethods();
 
   const openInvoicePreview = (invoice) => {
     setPreviewInvoice(invoice);
@@ -72,6 +63,7 @@ export function InvoicePaymentPage() {
 
   const beginPayment = (invoices) => {
     if (!invoices.length) return;
+    syncFromStorage();
     setInvoicesForPayment(invoices);
     setPayModalOpen(true);
   };
@@ -93,6 +85,11 @@ export function InvoicePaymentPage() {
 
   const openPaymentModalFromBanner = () => {
     beginPayment(pendingInvoices);
+  };
+
+  const openPaymentModalForInvoice = (invoice) => {
+    if (invoice.status === 'Paid') return;
+    beginPayment([invoice]);
   };
 
   useEffect(() => {
@@ -248,6 +245,8 @@ export function InvoicePaymentPage() {
                     onToggleRow={handleToggleRow}
                     onToggleAll={handleToggleAll}
                     onViewInvoice={openInvoicePreview}
+                    onViewInvoiceDocument={openInvoicePreview}
+                    onPayInvoice={openPaymentModalForInvoice}
                   />
 
                   <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1.25} sx={{ pt: 2 }}>
@@ -297,19 +296,23 @@ export function InvoicePaymentPage() {
         onClose={() => setPayModalOpen(false)}
         invoices={invoicesForPayment}
         defaultTypeId={defaultMethod?.typeId}
-        onPayNow={(typeId, details) => {
-          addPaymentMethod(typeId, details, { makeDefault: true });
+        onPayNow={(payload) => {
+          payAtCheckout(payload);
+        }}
+        onPaymentComplete={() => {
           setPayModalOpen(false);
-          setSuccessPayOpen(true);
           setSelectedIds([]);
         }}
       />
-      <PaymentSuccessAnimation
-        open={successPayOpen}
-        amountLabel={paymentTotalLabel}
-        onClose={() => setSuccessPayOpen(false)}
+      <InvoicePreviewDrawer
+        open={previewDrawerOpen}
+        invoice={previewInvoice}
+        onClose={closeInvoicePreview}
+        onPayNow={(invoice) => {
+          closeInvoicePreview();
+          openPaymentModalForInvoice(invoice);
+        }}
       />
-      <InvoicePreviewDrawer open={previewDrawerOpen} invoice={previewInvoice} onClose={closeInvoicePreview} />
       <InvoiceStatsLayoutToggle
         layout={statsLayout}
         onChange={(next) => {

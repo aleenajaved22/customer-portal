@@ -1,6 +1,6 @@
 import { getDefaultPaymentMethodsState } from '../data/defaultPaymentMethods';
 
-const STORAGE_KEY = 'filtergo_portal_payment_methods_v1';
+const STORAGE_KEY = 'filtergo_portal_payment_methods_v2';
 
 export function getStoredPaymentMethods() {
   try {
@@ -10,9 +10,6 @@ export function getStoredPaymentMethods() {
     }
     const parsed = JSON.parse(raw);
     const methods = Array.isArray(parsed.methods) ? parsed.methods : [];
-    if (methods.length === 0) {
-      return getDefaultPaymentMethodsState();
-    }
     return {
       methods,
       defaultMethodId: parsed.defaultMethodId ?? methods[0]?.id ?? null,

@@ -10,36 +10,34 @@ import { FiltergoWordmark } from './FiltergoWordmark';
 import { PAYMENT_METHOD_TYPES } from './payment-method-logos';
 import { Button, Dialog } from './design-system';
 import { PaymentMethodFormFields } from './PaymentMethodFormFields';
-
-const DEFAULT_DETAILS = {
-  'credit-card': {
-    last4: '3456',
-    nameOnCard: 'Josh Franklin',
-    expiryMonth: '09',
-    expiryYear: '28',
-    reference: '009001706623',
-    accountCode: '45700',
-  },
-  ach: { accountLast4: '6789', accountHolderName: 'Josh Franklin', reference: '009001706624', accountCode: '45701' },
-  paypal: { email: 'you@example.com', reference: '009001706625', accountCode: '45702' },
-  zelle: { contact: 'payments@filtergo.com', nickname: 'Business Zelle', reference: '009001706626', accountCode: '45703' },
-  venmo: { username: '@filtergo', phone: '(402) 555-0100', reference: '009001706627', accountCode: '45704' },
-};
+import { PaymentMethodTypePicker } from './PaymentMethodTypePicker';
+import { EMPTY_PAYMENT_METHOD_FORMS, buildDetailsFromForm } from '../data/paymentMethodCategories';
 
 export function AddPaymentMethodModal({ open, onClose, onSave, title = 'Add payment method', initialTypeId }) {
   const theme = useTheme();
   const [selectedId, setSelectedId] = useState(PAYMENT_METHOD_TYPES[0].id);
+  const [formValues, setFormValues] = useState(EMPTY_PAYMENT_METHOD_FORMS[PAYMENT_METHOD_TYPES[0].id]);
 
   useEffect(() => {
-    if (open) {
-      setSelectedId(initialTypeId ?? PAYMENT_METHOD_TYPES[0].id);
-    }
+    if (!open) return;
+    const typeId = initialTypeId ?? PAYMENT_METHOD_TYPES[0].id;
+    setSelectedId(typeId);
+    setFormValues({ ...EMPTY_PAYMENT_METHOD_FORMS[typeId] });
   }, [open, initialTypeId]);
 
-  const selectedMethod = PAYMENT_METHOD_TYPES.find((method) => method.id === selectedId) ?? PAYMENT_METHOD_TYPES[0];
+  const handleTypeChange = (typeId) => {
+    setSelectedId(typeId);
+    setFormValues({ ...EMPTY_PAYMENT_METHOD_FORMS[typeId] });
+  };
+
+  const handleFieldChange = (field, value) => {
+    setFormValues((prev) => ({ ...prev, [field]: value }));
+  };
 
   const handleSave = () => {
-    onSave?.(selectedId, DEFAULT_DETAILS[selectedId] ?? {});
+    const details = buildDetailsFromForm(selectedId, formValues);
+    onSave?.(selectedId, details);
+    onClose?.();
   };
 
   return (
@@ -71,55 +69,11 @@ export function AddPaymentMethodModal({ open, onClose, onSave, title = 'Add paym
         <Typography sx={{ fontSize: 13, fontWeight: 500, color: theme.palette.textSecondary3, mb: 1 }}>
           Payment method
         </Typography>
-        <Stack direction="row" spacing={1} sx={{ mb: 2, width: '100%', flexWrap: 'nowrap' }}>
-          {PAYMENT_METHOD_TYPES.map(({ id, label, Logo }) => {
-            const isSelected = selectedId === id;
-
-            return (
-              <Box
-                key={id}
-                component="button"
-                type="button"
-                onClick={() => setSelectedId(id)}
-                sx={{
-                  flex: '1 1 0',
-                  minWidth: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 0.75,
-                  px: 0.5,
-                  py: 1.25,
-                  border: `1px solid ${isSelected ? theme.palette.primary.main : theme.palette.borderSubtle2}`,
-                  borderRadius: '8px',
-                  backgroundColor: isSelected ? theme.palette.surfaceBrandSubtle : theme.palette.surfaceWhite,
-                  cursor: 'pointer',
-                }}
-              >
-                <Logo />
-                <Typography
-                  sx={{
-                    fontSize: 11,
-                    fontWeight: 500,
-                    textAlign: 'center',
-                    lineHeight: 1.2,
-                  }}
-                >
-                  {label}
-                </Typography>
-              </Box>
-            );
-          })}
-        </Stack>
+        <PaymentMethodTypePicker methods={PAYMENT_METHOD_TYPES} selectedId={selectedId} onSelect={handleTypeChange} />
 
         <Divider sx={{ mb: 2.5, borderColor: theme.palette.borderSubtle1 }} />
 
-        <Typography sx={{ fontSize: 15, fontWeight: 600, mb: 2 }}>
-          {selectedMethod.label} details
-        </Typography>
-
-        <PaymentMethodFormFields methodId={selectedId} />
+        <PaymentMethodFormFields methodId={selectedId} values={formValues} onChange={handleFieldChange} />
 
         <Button variant="primary" fullWidth onClick={handleSave} sx={{ mt: 3, py: 1.25, fontWeight: 600, borderRadius: '8px' }}>
           Save payment method
