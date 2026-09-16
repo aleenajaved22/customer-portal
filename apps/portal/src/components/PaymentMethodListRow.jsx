@@ -87,7 +87,7 @@ export function PaymentMethodListRow({ method, onEdit, onRemove, showActions = t
     >
       <MethodMarkSlot method={method} Logo={type?.Logo} />
 
-      <Box sx={{ flex: 1, minWidth: 0 }}>
+      <Box sx={{ flex: '0 1 240px', minWidth: 0 }}>
         <Typography
           sx={{
             fontSize: 16,
@@ -132,8 +132,11 @@ export function PaymentMethodListRow({ method, onEdit, onRemove, showActions = t
         ))}
       </Stack>
 
+      {/* Absorbs the slack so the data stays grouped left and actions stay right. */}
+      <Box sx={{ flex: 1, minWidth: 8 }} />
+
       {showActions ? (
-        <Stack direction="row" spacing={0.25} sx={{ flexShrink: 0, ml: 1 }}>
+        <Stack direction="row" spacing={0.25} sx={{ flexShrink: 0 }}>
           <RowAction
             label={`Edit ${display.primary}`}
             icon={<EditOutlinedIcon sx={{ fontSize: 18 }} />}
