@@ -211,6 +211,8 @@ export function InvoicePaymentPage() {
               onQueryChange={setQuery}
               site={site}
               onSiteChange={setSite}
+              status={status}
+              onStatusChange={setStatus}
               showPayNow={selectedIds.length > 0}
               onPayNow={openPaymentModalFromToolbar}
             />

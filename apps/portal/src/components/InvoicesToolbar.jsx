@@ -1,10 +1,10 @@
 import InputAdornment from '@mui/material/InputAdornment';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';
-import SearchIcon from '@mui/icons-material/Search';
+import SearchRoundedIcon from '@mui/icons-material/SearchRounded';
 import { FilterSelect } from './FilterSelect';
 import { Button, Search } from './design-system';
-import { invoiceSiteFilterOptions } from '../data/mockInvoices';
+import { invoiceSiteFilterOptions, invoiceStatusFilterOptions } from '../data/mockInvoices';
 
 const SEARCH_PLACEHOLDER = 'Search by invoice no.';
 
@@ -13,6 +13,8 @@ export function InvoicesToolbar({
   onQueryChange,
   site,
   onSiteChange,
+  status,
+  onStatusChange,
   showPayNow = false,
   onPayNow,
 }) {
@@ -29,7 +31,7 @@ export function InvoicesToolbar({
     >
       <Stack
         direction={{ xs: 'column', md: 'row' }}
-        spacing={2.5}
+        spacing={{ xs: 2, md: 1 }}
         alignItems={{ xs: 'stretch', md: 'center' }}
       >
         <Search
@@ -51,6 +53,18 @@ export function InvoicesToolbar({
             },
             '& .MuiOutlinedInput-input': {
               minWidth: `${searchWidthCh}ch`,
+              fontSize: 14,
+              fontWeight: 500,
+            },
+            // Theme ships the placeholder at 16px/400 #cccccc (1.61:1 on white) from a
+            // selector of equal specificity, so match it with a more specific one:
+            // filter type scale, and grey.500 for WCAG AA (5.37:1).
+            '& .MuiOutlinedInput-root .MuiInputBase-input::placeholder': {
+              fontSize: 14,
+              fontWeight: 500,
+              lineHeight: '20px',
+              color: '#6a6a70',
+              opacity: 1,
             },
             '& .MuiOutlinedInput-notchedOutline': {
               borderColor: theme.palette.borderSubtle2,
@@ -59,14 +73,20 @@ export function InvoicesToolbar({
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <SearchIcon sx={{ fontSize: 18, color: theme.palette.textSecondary3 }} />
+                <SearchRoundedIcon sx={{ fontSize: 18, color: theme.palette.textSecondary2 }} />
               </InputAdornment>
             ),
           }}
         />
 
-        <Stack direction="row" spacing={2.5} flexWrap="wrap" alignItems="center">
+        <Stack direction="row" spacing={0.5} flexWrap="wrap" alignItems="center">
           <FilterSelect label="Sites" value={site} onChange={onSiteChange} options={invoiceSiteFilterOptions} />
+          <FilterSelect
+            label="Status"
+            value={status}
+            onChange={onStatusChange}
+            options={invoiceStatusFilterOptions}
+          />
         </Stack>
       </Stack>
 
